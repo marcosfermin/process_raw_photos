@@ -1,4 +1,13 @@
-# RAW Photo Batch Processor v2.0
+# RAW Photo Batch Processor
+
+[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/marcosfermin/process_raw_photos/releases/tag/v2.0)
+[![License](https://img.shields.io/badge/license-GPL%20v3-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
+[![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)]()
+[![ImageMagick](https://img.shields.io/badge/requires-ImageMagick-red.svg)](https://imagemagick.org/)
+[![GitHub stars](https://img.shields.io/github/stars/marcosfermin/process_raw_photos?style=social)](https://github.com/marcosfermin/process_raw_photos)
+[![GitHub release](https://img.shields.io/github/v/release/marcosfermin/process_raw_photos)](https://github.com/marcosfermin/process_raw_photos/releases)
+[![Maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)](https://github.com/marcosfermin/process_raw_photos/commits/main)
 
 A professional-grade bash script for batch processing RAW files with **AI-like intelligent analysis**, multi-format support, parallel processing, and comprehensive editing tools.
 
