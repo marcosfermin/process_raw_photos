@@ -1027,20 +1027,22 @@ calculate_iso_noise_reduction() {
 
     local nr=0
 
-    if [ "$iso" -le 400 ]; then
+    if [ "$iso" -le 200 ]; then
         nr=0
+    elif [ "$iso" -le 400 ]; then
+        nr=15
     elif [ "$iso" -le 800 ]; then
-        nr=10
+        nr=30
     elif [ "$iso" -le 1600 ]; then
-        nr=25
+        nr=45
     elif [ "$iso" -le 3200 ]; then
-        nr=40
+        nr=60
     elif [ "$iso" -le 6400 ]; then
-        nr=55
+        nr=75
     elif [ "$iso" -le 12800 ]; then
-        nr=70
-    else
         nr=85
+    else
+        nr=95
     fi
 
     # Don't override manual setting if it's higher
@@ -3745,14 +3747,23 @@ process_single_image() {
         fi
 
         # 10. Noise reduction (using adaptive value from ISO analysis)
+        # Uses selective noise reduction that preserves edges
         if [ "$work_noise_reduction" -gt 0 ]; then
-            if [ "$work_noise_reduction" -lt 30 ]; then
-                magick_cmd="$magick_cmd -despeckle"
-            elif [ "$work_noise_reduction" -lt 60 ]; then
-                magick_cmd="$magick_cmd -despeckle -despeckle"
+            if [ "$work_noise_reduction" -lt 25 ]; then
+                # Light: single despeckle + enhance
+                magick_cmd="$magick_cmd -enhance -despeckle"
+            elif [ "$work_noise_reduction" -lt 45 ]; then
+                # Moderate: median filter for noise + edge-preserving smooth
+                magick_cmd="$magick_cmd -median 1 -enhance"
+            elif [ "$work_noise_reduction" -lt 65 ]; then
+                # Strong: larger median + selective blur
+                magick_cmd="$magick_cmd -median 2 -selective-blur 0x4+10%"
+            elif [ "$work_noise_reduction" -lt 85 ]; then
+                # Very strong: aggressive median + selective blur
+                magick_cmd="$magick_cmd -median 2 -selective-blur 0x5+10% -enhance"
             else
-                local blur_radius=$(echo "scale=1; $work_noise_reduction / 50" | bc)
-                magick_cmd="$magick_cmd -blur 0x${blur_radius} -sharpen 0x0.5"
+                # Maximum: heavy noise reduction for very high ISO
+                magick_cmd="$magick_cmd -median 3 -selective-blur 0x6+15% -enhance"
             fi
         fi
 
