@@ -3177,20 +3177,10 @@ match_lens_profile() {
                 local dist_amt=$(echo "$entry" | cut -d'|' -f4)
                 local vig_amt=$(echo "$entry" | cut -d'|' -f5)
 
+                # Lens corrections disabled - the distortion and vignette corrections
+                # were causing image quality issues. Lens profile matching is kept
+                # for informational purposes only.
                 LENS_CORRECTION_PARAMS=""
-
-                # Apply distortion correction
-                if [ "$dist_type" = "barrel" ]; then
-                    LENS_CORRECTION_PARAMS="-distort Barrel \"0 0 -$dist_amt 1\""
-                elif [ "$dist_type" = "pincushion" ]; then
-                    LENS_CORRECTION_PARAMS="-distort Barrel \"0 0 $dist_amt 1\""
-                fi
-
-                # Apply vignette correction (add light to corners)
-                if [ -n "$vig_amt" ] && [ "$vig_amt" != "0" ]; then
-                    local vig_correction=$(echo "100 + ($vig_amt * 20)" | bc -l | cut -d'.' -f1)
-                    LENS_CORRECTION_PARAMS="$LENS_CORRECTION_PARAMS -vignette 0x$vig_correction"
-                fi
 
                 return 0
             fi
