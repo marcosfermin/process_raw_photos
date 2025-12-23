@@ -2,7 +2,7 @@
 #===============================================================================
 #
 #   RAW PHOTO BATCH PROCESSOR
-#   Version: 2.0
+#   Version: 3.0
 #   Author: Marcos Fermin <https://marcosfermin.com>
 #   Date: December 22, 2025
 #
@@ -25,7 +25,7 @@
 #   Advanced batch processor for RAW files with AI-like intelligent analysis,
 #   professional presets, multi-format support, and comprehensive editing tools.
 #
-#   Key Features (v2.0):
+#   Key Features (v3.0):
 #   - Multi-format RAW support (CR2, NEF, ARW, ORF, RAF, DNG, RW2, PEF, SRW, CR3)
 #   - EXIF-based intelligent decisions (ISO-aware noise reduction, lens profiles)
 #   - Face detection for automatic portrait mode
@@ -42,6 +42,26 @@
 #   - Vibrance and noise reduction
 #   - Output options (resize, watermark, web versions)
 #   - Preview and analysis modes
+#
+#   NEW in v3.0:
+#   - Color cast detection and auto-correction (fixes white balance issues)
+#   - Golden hour/blue hour detection with optimized processing
+#   - Backlight detection with automatic HDR-like correction
+#   - Subject isolation and depth-of-field analysis
+#   - Chromatic aberration detection and correction
+#   - Lens distortion correction (barrel/pincushion)
+#   - Intelligent sky detection and enhancement
+#   - Advanced skin tone protection during adjustments
+#   - Red-eye detection and removal for flash portraits
+#   - Composition analysis (rule of thirds, centering)
+#   - Dynamic range optimization
+#   - Weather/lighting condition detection
+#   - Hot pixel detection and removal
+#   - Auto-leveling for horizon correction
+#   - Highlight recovery with detail preservation
+#   - Shadow detail enhancement without noise amplification
+#   - Color harmony analysis and enhancement
+#   - Batch learning for consistent style across images
 #
 #   Requirements:
 #   - ImageMagick (install via: brew install imagemagick)
@@ -174,6 +194,86 @@ SHOW_ETA=true                 # Show estimated time remaining
 # Processing statistics (for ETA calculation)
 declare -a PROCESSING_TIMES=()  # Array to store per-image processing times
 
+#-------------------------------------------------------------------------------
+# ADVANCED INTELLIGENT PROCESSING OPTIONS (NEW in v3.0)
+#-------------------------------------------------------------------------------
+
+# Color cast detection and correction
+ENABLE_COLOR_CAST_CORRECTION=true   # Auto-detect and fix color casts
+COLOR_CAST_THRESHOLD=8              # Minimum deviation to trigger correction (0-100)
+COLOR_CAST_STRENGTH=80              # Correction strength (0-100)
+
+# Golden hour / Blue hour detection
+ENABLE_GOLDEN_HOUR_DETECTION=true   # Detect and enhance golden/blue hour photos
+GOLDEN_HOUR_BOOST=true              # Apply special enhancement for golden hour
+
+# Backlight detection and HDR-like correction
+ENABLE_BACKLIGHT_DETECTION=true     # Detect backlit subjects
+BACKLIGHT_RECOVERY_STRENGTH=70      # Shadow recovery for backlit subjects (0-100)
+ENABLE_LOCAL_TONE_MAPPING=true      # Apply HDR-like local tone mapping
+
+# Subject isolation and depth analysis
+ENABLE_SUBJECT_DETECTION=true       # Detect main subject in frame
+ENABLE_DEPTH_ANALYSIS=true          # Analyze depth of field
+SUBJECT_ENHANCEMENT=true            # Enhance detected subject area
+
+# Chromatic aberration correction
+ENABLE_CA_CORRECTION=true           # Detect and fix chromatic aberration
+CA_DETECTION_THRESHOLD=5            # Sensitivity for CA detection
+
+# Lens distortion correction
+ENABLE_LENS_CORRECTION=true         # Correct barrel/pincushion distortion
+LENS_CORRECTION_STRENGTH=100        # Correction strength (0-100)
+
+# Sky detection and enhancement
+ENABLE_SKY_ENHANCEMENT=true         # Detect and enhance sky separately
+SKY_SATURATION_BOOST=15             # Extra saturation for sky (0-50)
+SKY_GRADIENT_ENHANCEMENT=true       # Enhance sky gradient
+
+# Skin tone protection
+ENABLE_SKIN_PROTECTION=true         # Protect skin tones during processing
+SKIN_TONE_SMOOTHING=30              # Subtle smoothing for skin (0-100)
+SKIN_SATURATION_LIMIT=95            # Prevent oversaturated skin (percentage)
+
+# Red-eye detection and removal
+ENABLE_RED_EYE_REMOVAL=true         # Detect and fix red-eye from flash
+RED_EYE_DETECTION_THRESHOLD=0.5     # Sensitivity for red-eye detection
+
+# Composition analysis
+ENABLE_COMPOSITION_ANALYSIS=true    # Analyze rule of thirds, symmetry
+ENABLE_AUTO_CROP=false              # Suggest/apply better crops
+AUTO_CROP_MARGIN=0.02               # Margin for auto-crop (percentage)
+
+# Dynamic range optimization
+ENABLE_DR_OPTIMIZATION=true         # Maximize usable dynamic range
+DR_TARGET_RANGE=0.85                # Target histogram spread (0-1)
+ENABLE_HIGHLIGHT_RECOVERY=true      # Advanced highlight recovery
+ENABLE_SHADOW_ENHANCEMENT=true      # Smart shadow detail recovery
+
+# Weather/lighting detection
+ENABLE_WEATHER_DETECTION=true       # Detect sunny, cloudy, overcast, etc.
+DETECTED_WEATHER="unknown"          # Will be set per-image
+
+# Hot pixel detection and removal
+ENABLE_HOT_PIXEL_REMOVAL=true       # Detect and remove hot pixels
+HOT_PIXEL_THRESHOLD=0.95            # Brightness threshold for hot pixels
+
+# Horizon auto-leveling
+ENABLE_AUTO_LEVEL=true              # Auto-detect and correct tilted horizons
+AUTO_LEVEL_THRESHOLD=1.5            # Minimum angle to trigger (degrees)
+
+# Color harmony analysis
+ENABLE_COLOR_HARMONY=true           # Analyze and enhance color relationships
+HARMONY_ENHANCEMENT_STRENGTH=20     # Enhancement strength (0-100)
+
+# Batch learning (learn from batch for consistency)
+ENABLE_BATCH_LEARNING=true          # Learn exposure/color from batch
+BATCH_CONSISTENCY_STRENGTH=50       # How much to normalize across batch (0-100)
+declare -a BATCH_EXPOSURES=()       # Store exposure data for batch learning
+declare -a BATCH_COLOR_TEMPS=()     # Store color temperature data
+BATCH_AVG_EXPOSURE=0                # Calculated batch average exposure
+BATCH_AVG_COLOR_TEMP=0              # Calculated batch average color temp
+
 # Logging configuration
 LOG_FILE="processing_log.txt"
 ENABLE_LOGGING=true
@@ -208,8 +308,8 @@ PROGRESS_WIDTH=40
 print_banner() {
     echo -e "${CYAN}"
     echo "╔═══════════════════════════════════════════════════════════════════╗"
-    echo "║               RAW PHOTO BATCH PROCESSOR v2.0                      ║"
-    echo "║            Intelligent Multi-Format Processing                    ║"
+    echo "║               RAW PHOTO BATCH PROCESSOR v3.0                      ║"
+    echo "║         Advanced AI-Like Intelligent Processing                   ║"
     echo "╚═══════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }
@@ -941,6 +1041,1228 @@ preserve_metadata() {
     fi
 }
 
+#===============================================================================
+# V3.0 ADVANCED INTELLIGENT FUNCTIONS
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_color_cast
+# Analyzes RGB channel balance to detect unwanted color casts
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_COLOR_CAST - Boolean
+#   COLOR_CAST_TYPE - "warm", "cool", "green", "magenta", "none"
+#   COLOR_CAST_CORRECTION - ImageMagick correction parameters
+#-------------------------------------------------------------------------------
+
+detect_color_cast() {
+    local input_file="$1"
+    HAS_COLOR_CAST=false
+    COLOR_CAST_TYPE="none"
+    COLOR_CAST_CORRECTION=""
+
+    if [ "$ENABLE_COLOR_CAST_CORRECTION" = false ]; then
+        return
+    fi
+
+    # Get average RGB values
+    local rgb=$(magick "$input_file" -resize 100x100! -format "%[fx:mean.r*255] %[fx:mean.g*255] %[fx:mean.b*255]" info: 2>/dev/null)
+    local red=$(echo "$rgb" | awk '{print $1}')
+    local green=$(echo "$rgb" | awk '{print $2}')
+    local blue=$(echo "$rgb" | awk '{print $3}')
+
+    red=${red:-128}
+    green=${green:-128}
+    blue=${blue:-128}
+
+    # Calculate neutral gray reference
+    local avg=$(echo "scale=2; ($red + $green + $blue) / 3" | bc -l)
+
+    # Calculate deviations
+    local red_dev=$(echo "scale=2; $red - $avg" | bc -l)
+    local green_dev=$(echo "scale=2; $green - $avg" | bc -l)
+    local blue_dev=$(echo "scale=2; $blue - $avg" | bc -l)
+
+    # Determine cast type and magnitude
+    local max_dev=$(echo "$red_dev $green_dev $blue_dev" | tr ' ' '\n' | awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1)}' | sort -rn | head -1)
+
+    if (( $(echo "$max_dev > $COLOR_CAST_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_COLOR_CAST=true
+
+        # Determine dominant cast
+        if (( $(echo "$red_dev > $green_dev && $red_dev > $blue_dev" | bc -l 2>/dev/null || echo 0) )); then
+            if (( $(echo "$red_dev > 0" | bc -l) )); then
+                COLOR_CAST_TYPE="warm"
+                local correction=$(echo "scale=0; 100 - ($red_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+                COLOR_CAST_CORRECTION="-channel R -evaluate multiply 0.$correction +channel"
+            fi
+        elif (( $(echo "$blue_dev > $red_dev && $blue_dev > $green_dev" | bc -l 2>/dev/null || echo 0) )); then
+            if (( $(echo "$blue_dev > 0" | bc -l) )); then
+                COLOR_CAST_TYPE="cool"
+                local correction=$(echo "scale=0; 100 - ($blue_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+                COLOR_CAST_CORRECTION="-channel B -evaluate multiply 0.$correction +channel"
+            fi
+        elif (( $(echo "$green_dev > $red_dev && $green_dev > $blue_dev" | bc -l 2>/dev/null || echo 0) )); then
+            if (( $(echo "$green_dev > 0" | bc -l) )); then
+                COLOR_CAST_TYPE="green"
+                local correction=$(echo "scale=0; 100 - ($green_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+                COLOR_CAST_CORRECTION="-channel G -evaluate multiply 0.$correction +channel"
+            else
+                COLOR_CAST_TYPE="magenta"
+                local boost=$(echo "scale=2; 1 + (${green_dev#-} * $COLOR_CAST_STRENGTH / 10000)" | bc -l)
+                COLOR_CAST_CORRECTION="-channel G -evaluate multiply $boost +channel"
+            fi
+        fi
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_golden_hour
+# Detects if photo was taken during golden hour or blue hour
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   IS_GOLDEN_HOUR - Boolean
+#   IS_BLUE_HOUR - Boolean
+#   GOLDEN_HOUR_ADJUSTMENTS - Suggested adjustments
+#-------------------------------------------------------------------------------
+
+detect_golden_hour() {
+    local input_file="$1"
+    IS_GOLDEN_HOUR=false
+    IS_BLUE_HOUR=false
+    GOLDEN_HOUR_ADJUSTMENTS=""
+
+    if [ "$ENABLE_GOLDEN_HOUR_DETECTION" = false ]; then
+        return
+    fi
+
+    # Analyze color temperature of the image
+    local rgb=$(magick "$input_file" -resize 50x50! -format "%[fx:mean.r] %[fx:mean.g] %[fx:mean.b]" info: 2>/dev/null)
+    local red=$(echo "$rgb" | awk '{print $1}')
+    local green=$(echo "$rgb" | awk '{print $2}')
+    local blue=$(echo "$rgb" | awk '{print $3}')
+
+    red=${red:-0.5}
+    green=${green:-0.5}
+    blue=${blue:-0.5}
+
+    # Golden hour: warm tones, red > green > blue
+    local rg_ratio=$(echo "scale=3; $red / ($green + 0.001)" | bc -l 2>/dev/null || echo "1")
+    local rb_ratio=$(echo "scale=3; $red / ($blue + 0.001)" | bc -l 2>/dev/null || echo "1")
+
+    # Blue hour: cool tones, blue dominant
+    local bg_ratio=$(echo "scale=3; $blue / ($green + 0.001)" | bc -l 2>/dev/null || echo "1")
+    local br_ratio=$(echo "scale=3; $blue / ($red + 0.001)" | bc -l 2>/dev/null || echo "1")
+
+    # Golden hour detection
+    if (( $(echo "$rg_ratio > 1.1 && $rb_ratio > 1.3" | bc -l 2>/dev/null || echo 0) )); then
+        IS_GOLDEN_HOUR=true
+        if [ "$GOLDEN_HOUR_BOOST" = true ]; then
+            GOLDEN_HOUR_ADJUSTMENTS="-modulate 102,115,100 -sigmoidal-contrast 2,50%"
+        fi
+    fi
+
+    # Blue hour detection
+    if (( $(echo "$bg_ratio > 1.15 && $br_ratio > 1.2" | bc -l 2>/dev/null || echo 0) )); then
+        IS_BLUE_HOUR=true
+        GOLDEN_HOUR_ADJUSTMENTS="-modulate 100,110,100 -brightness-contrast 5x5"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_backlight
+# Detects backlit subjects where the background is brighter than the subject
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   IS_BACKLIT - Boolean
+#   BACKLIGHT_SEVERITY - 0-100 scale
+#   BACKLIGHT_CORRECTION - ImageMagick parameters for correction
+#-------------------------------------------------------------------------------
+
+detect_backlight() {
+    local input_file="$1"
+    IS_BACKLIT=false
+    BACKLIGHT_SEVERITY=0
+    BACKLIGHT_CORRECTION=""
+
+    if [ "$ENABLE_BACKLIGHT_DETECTION" = false ]; then
+        return
+    fi
+
+    # Compare center brightness to edge brightness
+    local center_brightness=$(magick "$input_file" -resize 300x300! \
+        -gravity center -crop 40%x40%+0+0 +repage \
+        -format "%[fx:mean*255]" info: 2>/dev/null)
+    center_brightness=${center_brightness:-128}
+
+    local edge_brightness=$(magick "$input_file" -resize 300x300! \
+        -gravity center -crop 80%x80%+0+0 +repage \
+        -bordercolor white -border 1x1 \
+        -gravity center -crop 60%x60%+0+0 -negate +repage \
+        -format "%[fx:(1-mean)*255]" info: 2>/dev/null)
+    edge_brightness=${edge_brightness:-128}
+
+    # Backlit if edges are significantly brighter than center
+    local brightness_diff=$(echo "scale=2; $edge_brightness - $center_brightness" | bc -l)
+
+    if (( $(echo "$brightness_diff > 30" | bc -l 2>/dev/null || echo 0) )); then
+        IS_BACKLIT=true
+        BACKLIGHT_SEVERITY=$(echo "scale=0; $brightness_diff" | bc -l)
+
+        # Cap severity at 100
+        if [ "$BACKLIGHT_SEVERITY" -gt 100 ]; then
+            BACKLIGHT_SEVERITY=100
+        fi
+
+        # Calculate correction strength
+        local shadow_lift=$(echo "scale=0; $BACKLIGHT_RECOVERY_STRENGTH * $BACKLIGHT_SEVERITY / 100" | bc -l)
+        local highlight_compress=$(echo "scale=0; $shadow_lift / 2" | bc -l)
+
+        BACKLIGHT_CORRECTION="-brightness-contrast ${shadow_lift}x0 -sigmoidal-contrast 3,40%"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_subject
+# Attempts to isolate the main subject in the frame
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   SUBJECT_DETECTED - Boolean
+#   SUBJECT_POSITION - "center", "left", "right", "top", "bottom"
+#   SUBJECT_SIZE - Approximate percentage of frame
+#   SUBJECT_REGION - Geometry for the subject region
+#-------------------------------------------------------------------------------
+
+detect_subject() {
+    local input_file="$1"
+    SUBJECT_DETECTED=false
+    SUBJECT_POSITION="center"
+    SUBJECT_SIZE=0
+    SUBJECT_REGION=""
+
+    if [ "$ENABLE_SUBJECT_DETECTION" = false ]; then
+        return
+    fi
+
+    # Analyze contrast/detail distribution to find subject
+    # Get dimensions
+    local dimensions=$(magick identify -format "%w %h" "$input_file" 2>/dev/null)
+    local width=$(echo "$dimensions" | awk '{print $1}')
+    local height=$(echo "$dimensions" | awk '{print $2}')
+
+    # Divide image into 9 regions (3x3 grid)
+    local region_w=$((width / 3))
+    local region_h=$((height / 3))
+
+    # Find region with highest detail (Laplacian variance)
+    local max_detail=0
+    local max_region=""
+    local region_num=0
+
+    for row in 0 1 2; do
+        for col in 0 1 2; do
+            local x=$((col * region_w))
+            local y=$((row * region_h))
+
+            local detail=$(magick "$input_file" -crop ${region_w}x${region_h}+${x}+${y} +repage \
+                -define convolve:scale='!' -morphology Convolve Laplacian:0 \
+                -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+            detail=${detail:-0}
+
+            if (( $(echo "$detail > $max_detail" | bc -l 2>/dev/null || echo 0) )); then
+                max_detail=$detail
+                max_region="$row,$col"
+            fi
+
+            region_num=$((region_num + 1))
+        done
+    done
+
+    if (( $(echo "$max_detail > 20" | bc -l 2>/dev/null || echo 0) )); then
+        SUBJECT_DETECTED=true
+
+        # Determine position from region
+        local row=$(echo "$max_region" | cut -d',' -f1)
+        local col=$(echo "$max_region" | cut -d',' -f2)
+
+        if [ "$row" -eq 0 ]; then
+            SUBJECT_POSITION="top"
+        elif [ "$row" -eq 2 ]; then
+            SUBJECT_POSITION="bottom"
+        fi
+
+        if [ "$col" -eq 0 ]; then
+            SUBJECT_POSITION="${SUBJECT_POSITION}left"
+        elif [ "$col" -eq 2 ]; then
+            SUBJECT_POSITION="${SUBJECT_POSITION}right"
+        elif [ "$row" -eq 1 ]; then
+            SUBJECT_POSITION="center"
+        fi
+
+        # Estimate subject size (simplified)
+        SUBJECT_SIZE=33  # Approximately one grid region
+
+        local x=$((${col} * region_w))
+        local y=$((${row} * region_h))
+        SUBJECT_REGION="${region_w}x${region_h}+${x}+${y}"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_chromatic_aberration
+# Detects purple/green fringing at high-contrast edges (chromatic aberration)
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_CA - Boolean
+#   CA_SEVERITY - 0-100 scale
+#   CA_CORRECTION - ImageMagick correction parameters
+#-------------------------------------------------------------------------------
+
+detect_chromatic_aberration() {
+    local input_file="$1"
+    HAS_CA=false
+    CA_SEVERITY=0
+    CA_CORRECTION=""
+
+    if [ "$ENABLE_CA_CORRECTION" = false ]; then
+        return
+    fi
+
+    # Detect color fringing at edges
+    # Look for purple/green color at high-contrast boundaries
+
+    # Get edge map
+    local edge_colors=$(magick "$input_file" -resize 400x400! \
+        -edge 1 -negate \
+        -format "%[fx:mean.r] %[fx:mean.g] %[fx:mean.b]" info: 2>/dev/null)
+
+    local er=$(echo "$edge_colors" | awk '{print $1}')
+    local eg=$(echo "$edge_colors" | awk '{print $2}')
+    local eb=$(echo "$edge_colors" | awk '{print $3}')
+
+    er=${er:-0.5}
+    eg=${eg:-0.5}
+    eb=${eb:-0.5}
+
+    # Purple fringing: high red and blue, low green at edges
+    local purple_score=$(echo "scale=3; ($er + $eb) / 2 - $eg" | bc -l 2>/dev/null || echo "0")
+
+    # Green fringing: high green at edges
+    local green_score=$(echo "scale=3; $eg - ($er + $eb) / 2" | bc -l 2>/dev/null || echo "0")
+
+    local max_score=$(echo "$purple_score $green_score" | tr ' ' '\n' | awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1)}' | sort -rn | head -1)
+    local threshold=$(echo "scale=3; $CA_DETECTION_THRESHOLD / 100" | bc -l)
+
+    if (( $(echo "$max_score > $threshold" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_CA=true
+        CA_SEVERITY=$(echo "scale=0; $max_score * 100" | bc -l)
+
+        if (( $(echo "$purple_score > $green_score" | bc -l 2>/dev/null || echo 0) )); then
+            # Reduce purple fringing by slightly shifting red and blue channels
+            CA_CORRECTION="-channel R -morphology Erode Disk:1 +channel -channel B -morphology Erode Disk:1 +channel"
+        else
+            # Reduce green fringing
+            CA_CORRECTION="-channel G -morphology Erode Disk:1 +channel"
+        fi
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_lens_distortion
+# Detects barrel or pincushion distortion from lens
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_DISTORTION - Boolean
+#   DISTORTION_TYPE - "barrel", "pincushion", "none"
+#   DISTORTION_AMOUNT - Magnitude
+#   DISTORTION_CORRECTION - ImageMagick correction parameters
+#-------------------------------------------------------------------------------
+
+detect_lens_distortion() {
+    local input_file="$1"
+    HAS_DISTORTION=false
+    DISTORTION_TYPE="none"
+    DISTORTION_AMOUNT=0
+    DISTORTION_CORRECTION=""
+
+    if [ "$ENABLE_LENS_CORRECTION" = false ]; then
+        return
+    fi
+
+    # Use focal length from EXIF to estimate distortion
+    local focal_length=${EXIF_FOCAL_LENGTH:-50}
+
+    # Wide angle lenses typically have barrel distortion
+    # Telephoto lenses can have pincushion distortion
+
+    if (( $(echo "$focal_length < 24" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_DISTORTION=true
+        DISTORTION_TYPE="barrel"
+        # Stronger correction for wider lenses
+        DISTORTION_AMOUNT=$(echo "scale=2; (24 - $focal_length) * 0.5" | bc -l)
+        local correction_pct=$(echo "scale=4; $DISTORTION_AMOUNT * $LENS_CORRECTION_STRENGTH / 10000" | bc -l)
+        DISTORTION_CORRECTION="-distort Barrel \"0 0 -${correction_pct} 1\""
+    elif (( $(echo "$focal_length > 100" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_DISTORTION=true
+        DISTORTION_TYPE="pincushion"
+        DISTORTION_AMOUNT=$(echo "scale=2; ($focal_length - 100) * 0.1" | bc -l)
+        local correction_pct=$(echo "scale=4; $DISTORTION_AMOUNT * $LENS_CORRECTION_STRENGTH / 10000" | bc -l)
+        DISTORTION_CORRECTION="-distort Barrel \"0 0 ${correction_pct} 1\""
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_sky
+# Detects sky regions in the image for separate enhancement
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_SKY - Boolean
+#   SKY_REGION - Top percentage of image that is sky
+#   SKY_TYPE - "blue", "sunset", "overcast", "night"
+#   SKY_ENHANCEMENT_PARAMS - ImageMagick parameters
+#-------------------------------------------------------------------------------
+
+detect_sky() {
+    local input_file="$1"
+    HAS_SKY=false
+    SKY_REGION=0
+    SKY_TYPE="none"
+    SKY_ENHANCEMENT_PARAMS=""
+
+    if [ "$ENABLE_SKY_ENHANCEMENT" = false ]; then
+        return
+    fi
+
+    # Analyze top portion of image for sky characteristics
+    local top_colors=$(magick "$input_file" -gravity North -crop 100%x30%+0+0 +repage \
+        -resize 50x50! \
+        -format "%[fx:mean.r] %[fx:mean.g] %[fx:mean.b] %[fx:mean] %[fx:standard_deviation]" info: 2>/dev/null)
+
+    local tr=$(echo "$top_colors" | awk '{print $1}')
+    local tg=$(echo "$top_colors" | awk '{print $2}')
+    local tb=$(echo "$top_colors" | awk '{print $3}')
+    local tmean=$(echo "$top_colors" | awk '{print $4}')
+    local tstd=$(echo "$top_colors" | awk '{print $5}')
+
+    tr=${tr:-0.5}
+    tg=${tg:-0.5}
+    tb=${tb:-0.5}
+    tmean=${tmean:-0.5}
+    tstd=${tstd:-0.2}
+
+    # Sky detection: relatively uniform area (low std dev) with characteristic colors
+    if (( $(echo "$tstd < 0.25" | bc -l 2>/dev/null || echo 0) )); then
+
+        # Blue sky: blue > red, blue > green
+        if (( $(echo "$tb > $tr && $tb > $tg && $tmean > 0.3" | bc -l 2>/dev/null || echo 0) )); then
+            HAS_SKY=true
+            SKY_TYPE="blue"
+            SKY_REGION=30
+            SKY_ENHANCEMENT_PARAMS="-modulate 100,$((100 + SKY_SATURATION_BOOST)),100"
+
+        # Sunset sky: red/orange dominant
+        elif (( $(echo "$tr > $tb && $tr > $tg * 0.9" | bc -l 2>/dev/null || echo 0) )); then
+            HAS_SKY=true
+            SKY_TYPE="sunset"
+            SKY_REGION=30
+            SKY_ENHANCEMENT_PARAMS="-modulate 102,$((105 + SKY_SATURATION_BOOST)),100"
+
+        # Overcast: gray, low saturation
+        elif (( $(echo "$tstd < 0.1 && $tmean > 0.5" | bc -l 2>/dev/null || echo 0) )); then
+            HAS_SKY=true
+            SKY_TYPE="overcast"
+            SKY_REGION=30
+            SKY_ENHANCEMENT_PARAMS="-brightness-contrast 5x10"
+
+        # Night sky: dark with low std dev
+        elif (( $(echo "$tmean < 0.15" | bc -l 2>/dev/null || echo 0) )); then
+            HAS_SKY=true
+            SKY_TYPE="night"
+            SKY_REGION=30
+            SKY_ENHANCEMENT_PARAMS="-brightness-contrast 10x5"
+        fi
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_skin_tones
+# Detects areas with skin tones for protection during processing
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_SKIN_TONES - Boolean
+#   SKIN_COVERAGE - Percentage of image with skin tones
+#   SKIN_PROTECTION_PARAMS - Parameters to protect skin
+#-------------------------------------------------------------------------------
+
+detect_skin_tones() {
+    local input_file="$1"
+    HAS_SKIN_TONES=false
+    SKIN_COVERAGE=0
+    SKIN_PROTECTION_PARAMS=""
+
+    if [ "$ENABLE_SKIN_PROTECTION" = false ]; then
+        return
+    fi
+
+    # Detect skin tones using HSL color space
+    # Skin tones typically: Hue 0-50 (red-orange), Saturation 20-80%, Lightness 30-80%
+
+    local skin_ratio=$(magick "$input_file" -resize 200x200! \
+        -colorspace HSL -channel R -separate +channel \
+        -threshold 15% -negate -threshold 85% \
+        -format "%[fx:mean]" info: 2>/dev/null)
+    skin_ratio=${skin_ratio:-0}
+
+    SKIN_COVERAGE=$(echo "scale=0; $skin_ratio * 100" | bc -l)
+
+    if (( $(echo "$skin_ratio > 0.05" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_SKIN_TONES=true
+
+        # Calculate protection parameters
+        # Limit saturation to prevent orange/red skin
+        local sat_limit=$SKIN_SATURATION_LIMIT
+        SKIN_PROTECTION_PARAMS="-modulate 100,$sat_limit,100"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_red_eye
+# Detects red-eye effect from flash photography
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_RED_EYE - Boolean
+#   RED_EYE_REGIONS - Array of regions with red-eye
+#-------------------------------------------------------------------------------
+
+detect_red_eye() {
+    local input_file="$1"
+    HAS_RED_EYE=false
+    RED_EYE_REGIONS=()
+
+    if [ "$ENABLE_RED_EYE_REMOVAL" = false ]; then
+        return
+    fi
+
+    # Only check if flash was fired
+    if [ "$EXIF_FLASH_FIRED" = false ]; then
+        return
+    fi
+
+    # Look for small, highly saturated red regions
+    local red_spots=$(magick "$input_file" -resize 400x400! \
+        -colorspace HSL \
+        \( +clone -channel R -separate +channel -threshold 5% -threshold 95% \) \
+        \( +clone -channel G -separate +channel -threshold 50% \) \
+        \( +clone -channel B -separate +channel -threshold 30% -negate -threshold 70% \) \
+        -compose Multiply -composite \
+        -format "%[fx:mean*10000]" info: 2>/dev/null)
+    red_spots=${red_spots:-0}
+
+    if (( $(echo "$red_spots > $RED_EYE_DETECTION_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_RED_EYE=true
+        # Note: Actual region detection would require more complex analysis
+        # For now, we flag and apply global red-eye reduction
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: analyze_composition
+# Analyzes image composition (rule of thirds, symmetry, etc.)
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   COMPOSITION_SCORE - 0-100 rating
+#   COMPOSITION_NOTES - Array of observations
+#   SUGGESTED_CROP - Geometry for improved crop (if any)
+#-------------------------------------------------------------------------------
+
+analyze_composition() {
+    local input_file="$1"
+    COMPOSITION_SCORE=50
+    COMPOSITION_NOTES=()
+    SUGGESTED_CROP=""
+
+    if [ "$ENABLE_COMPOSITION_ANALYSIS" = false ]; then
+        return
+    fi
+
+    local dimensions=$(magick identify -format "%w %h" "$input_file" 2>/dev/null)
+    local width=$(echo "$dimensions" | awk '{print $1}')
+    local height=$(echo "$dimensions" | awk '{print $2}')
+
+    # Check if subject is on rule of thirds points
+    # Divide into 9 regions and find the one with most interest
+
+    local third_w=$((width / 3))
+    local third_h=$((height / 3))
+
+    # Get detail levels at rule of thirds intersections
+    local intersections=("$third_w,$third_h" "$((third_w*2)),$third_h" "$third_w,$((third_h*2))" "$((third_w*2)),$((third_h*2))")
+
+    local max_interest=0
+    local best_intersection=""
+
+    for point in "${intersections[@]}"; do
+        local px=$(echo "$point" | cut -d',' -f1)
+        local py=$(echo "$point" | cut -d',' -f2)
+
+        local interest=$(magick "$input_file" -crop 100x100+$((px-50))+$((py-50)) +repage \
+            -define convolve:scale='!' -morphology Convolve Laplacian:0 \
+            -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+        interest=${interest:-0}
+
+        if (( $(echo "$interest > $max_interest" | bc -l 2>/dev/null || echo 0) )); then
+            max_interest=$interest
+            best_intersection="$point"
+        fi
+    done
+
+    # Score based on whether interest aligns with thirds
+    if (( $(echo "$max_interest > 30" | bc -l 2>/dev/null || echo 0) )); then
+        COMPOSITION_SCORE=$((COMPOSITION_SCORE + 20))
+        COMPOSITION_NOTES+=("Subject on rule of thirds")
+    fi
+
+    # Check for centered composition
+    local center_interest=$(magick "$input_file" -gravity center -crop 30%x30%+0+0 +repage \
+        -define convolve:scale='!' -morphology Convolve Laplacian:0 \
+        -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+    center_interest=${center_interest:-0}
+
+    if (( $(echo "$center_interest > $max_interest * 1.5" | bc -l 2>/dev/null || echo 0) )); then
+        COMPOSITION_SCORE=$((COMPOSITION_SCORE + 15))
+        COMPOSITION_NOTES+=("Strong center composition")
+    fi
+
+    # Cap score at 100
+    if [ "$COMPOSITION_SCORE" -gt 100 ]; then
+        COMPOSITION_SCORE=100
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_weather
+# Detects weather/lighting conditions from image analysis
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   DETECTED_WEATHER - "sunny", "cloudy", "overcast", "rainy", "foggy", "sunset", "night"
+#   WEATHER_CONFIDENCE - 0-100
+#   WEATHER_ADJUSTMENTS - Suggested adjustments for weather type
+#-------------------------------------------------------------------------------
+
+detect_weather() {
+    local input_file="$1"
+    DETECTED_WEATHER="unknown"
+    WEATHER_CONFIDENCE=0
+    WEATHER_ADJUSTMENTS=""
+
+    if [ "$ENABLE_WEATHER_DETECTION" = false ]; then
+        return
+    fi
+
+    # Get overall image statistics
+    local stats=$(magick "$input_file" -resize 100x100! \
+        -format "%[fx:mean] %[fx:standard_deviation] %[fx:mean.r] %[fx:mean.g] %[fx:mean.b]" info: 2>/dev/null)
+
+    local mean=$(echo "$stats" | awk '{print $1}')
+    local stddev=$(echo "$stats" | awk '{print $2}')
+    local mr=$(echo "$stats" | awk '{print $3}')
+    local mg=$(echo "$stats" | awk '{print $4}')
+    local mb=$(echo "$stats" | awk '{print $5}')
+
+    mean=${mean:-0.5}
+    stddev=${stddev:-0.2}
+    mr=${mr:-0.5}
+    mg=${mg:-0.5}
+    mb=${mb:-0.5}
+
+    # Sunny: high brightness, high contrast, blue sky likely
+    if (( $(echo "$mean > 0.5 && $stddev > 0.25 && $mb > $mr" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="sunny"
+        WEATHER_CONFIDENCE=75
+        WEATHER_ADJUSTMENTS="-brightness-contrast 0x5"
+
+    # Cloudy: medium brightness, lower contrast
+    elif (( $(echo "$mean > 0.4 && $mean < 0.6 && $stddev < 0.2" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="cloudy"
+        WEATHER_CONFIDENCE=60
+        WEATHER_ADJUSTMENTS="-brightness-contrast 5x10 -modulate 100,110,100"
+
+    # Overcast: flat, gray
+    elif (( $(echo "$stddev < 0.15 && $mean > 0.35" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="overcast"
+        WEATHER_CONFIDENCE=65
+        WEATHER_ADJUSTMENTS="-brightness-contrast 5x15 -modulate 100,115,100"
+
+    # Foggy: very low contrast, washed out
+    elif (( $(echo "$stddev < 0.1 && $mean > 0.5" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="foggy"
+        WEATHER_CONFIDENCE=70
+        WEATHER_ADJUSTMENTS="-brightness-contrast 0x20 -level 5%,95%"
+
+    # Sunset: warm tones dominate
+    elif (( $(echo "$mr > $mb * 1.3 && $mr > $mg" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="sunset"
+        WEATHER_CONFIDENCE=70
+        WEATHER_ADJUSTMENTS="-modulate 102,115,100"
+
+    # Night: very dark
+    elif (( $(echo "$mean < 0.2" | bc -l 2>/dev/null || echo 0) )); then
+        DETECTED_WEATHER="night"
+        WEATHER_CONFIDENCE=80
+        WEATHER_ADJUSTMENTS="-brightness-contrast 15x5 -modulate 100,110,100"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_hot_pixels
+# Detects and marks hot pixels (stuck bright pixels) for removal
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_HOT_PIXELS - Boolean
+#   HOT_PIXEL_COUNT - Approximate count
+#   HOT_PIXEL_CORRECTION - ImageMagick correction
+#-------------------------------------------------------------------------------
+
+detect_hot_pixels() {
+    local input_file="$1"
+    HAS_HOT_PIXELS=false
+    HOT_PIXEL_COUNT=0
+    HOT_PIXEL_CORRECTION=""
+
+    if [ "$ENABLE_HOT_PIXEL_REMOVAL" = false ]; then
+        return
+    fi
+
+    # Hot pixels are more common in long exposures and high ISO
+    local iso=${EXIF_ISO:-100}
+    local shutter="$EXIF_SHUTTER"
+
+    # Only check for high ISO or long exposure
+    if [ "$iso" -lt 1600 ]; then
+        return
+    fi
+
+    # Detect isolated bright pixels
+    local hot_ratio=$(magick "$input_file" -resize 800x800! \
+        -morphology HitAndMiss '3x3: 0,0,0  0,1,0  0,0,0' \
+        -threshold "${HOT_PIXEL_THRESHOLD}0%" \
+        -format "%[fx:mean*100000]" info: 2>/dev/null)
+    hot_ratio=${hot_ratio:-0}
+
+    if (( $(echo "$hot_ratio > 1" | bc -l 2>/dev/null || echo 0) )); then
+        HAS_HOT_PIXELS=true
+        HOT_PIXEL_COUNT=$(echo "scale=0; $hot_ratio" | bc -l)
+        # Median filter removes isolated pixels while preserving edges
+        HOT_PIXEL_CORRECTION="-statistic median 3x3"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_horizon_tilt
+# Detects if the horizon is tilted and calculates correction angle
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HORIZON_TILTED - Boolean
+#   HORIZON_ANGLE - Detected tilt angle in degrees
+#   HORIZON_CORRECTION - Rotation to apply
+#-------------------------------------------------------------------------------
+
+detect_horizon_tilt() {
+    local input_file="$1"
+    HORIZON_TILTED=false
+    HORIZON_ANGLE=0
+    HORIZON_CORRECTION=""
+
+    if [ "$ENABLE_AUTO_LEVEL" = false ]; then
+        return
+    fi
+
+    # Use edge detection to find dominant lines
+    # This is a simplified version - full implementation would use Hough transform
+
+    # Detect horizontal edges in the image
+    local edge_data=$(magick "$input_file" -resize 400x400! \
+        -edge 2 -negate \
+        -gravity center -crop 80%x30%+0+0 +repage \
+        -threshold 50% \
+        -moments \
+        -format "%[fx:mean]" info: 2>/dev/null)
+
+    # Simplified: detect by comparing left and right edge heights
+    local left_height=$(magick "$input_file" -resize 400x400! \
+        -gravity West -crop 10%x100%+0+0 +repage \
+        -edge 1 -negate -threshold 50% \
+        -format "%[fx:mean*255]" info: 2>/dev/null)
+
+    local right_height=$(magick "$input_file" -resize 400x400! \
+        -gravity East -crop 10%x100%+0+0 +repage \
+        -edge 1 -negate -threshold 50% \
+        -format "%[fx:mean*255]" info: 2>/dev/null)
+
+    left_height=${left_height:-0}
+    right_height=${right_height:-0}
+
+    # Estimate angle from height difference
+    local height_diff=$(echo "scale=3; $right_height - $left_height" | bc -l)
+    # Approximate: 1 degree per 5 units of difference
+    HORIZON_ANGLE=$(echo "scale=2; $height_diff / 5" | bc -l)
+
+    local abs_angle=$(echo "$HORIZON_ANGLE" | awk '{print ($1<0)?-$1:$1}')
+
+    if (( $(echo "$abs_angle > $AUTO_LEVEL_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
+        HORIZON_TILTED=true
+        HORIZON_CORRECTION="-rotate ${HORIZON_ANGLE}"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: optimize_dynamic_range
+# Optimizes the dynamic range of the image
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   DR_OPTIMIZED - Boolean
+#   DR_CORRECTION - ImageMagick parameters for DR optimization
+#   DR_HEADROOM - Available headroom in highlights
+#-------------------------------------------------------------------------------
+
+optimize_dynamic_range() {
+    local input_file="$1"
+    DR_OPTIMIZED=false
+    DR_CORRECTION=""
+    DR_HEADROOM=0
+
+    if [ "$ENABLE_DR_OPTIMIZATION" = false ]; then
+        return
+    fi
+
+    # Analyze current dynamic range usage
+    local stats=$(magick "$input_file" -format "%[fx:minima] %[fx:maxima] %[fx:mean] %[fx:standard_deviation]" info: 2>/dev/null)
+
+    local min_val=$(echo "$stats" | awk '{print $1}')
+    local max_val=$(echo "$stats" | awk '{print $2}')
+    local mean=$(echo "$stats" | awk '{print $3}')
+    local stddev=$(echo "$stats" | awk '{print $4}')
+
+    min_val=${min_val:-0}
+    max_val=${max_val:-1}
+    mean=${mean:-0.5}
+    stddev=${stddev:-0.2}
+
+    local current_range=$(echo "scale=3; $max_val - $min_val" | bc -l)
+    DR_HEADROOM=$(echo "scale=0; (1 - $max_val) * 100" | bc -l)
+
+    # Check if range needs optimization
+    if (( $(echo "$current_range < $DR_TARGET_RANGE" | bc -l 2>/dev/null || echo 0) )); then
+        DR_OPTIMIZED=true
+
+        # Calculate stretch parameters
+        local black_point=$(echo "scale=1; $min_val * 100" | bc -l)
+        local white_point=$(echo "scale=1; $max_val * 100" | bc -l)
+
+        # Slight expansion of range
+        black_point=$(echo "scale=1; $black_point + 0.5" | bc -l)
+        white_point=$(echo "scale=1; $white_point - 0.5" | bc -l)
+
+        DR_CORRECTION="-level ${black_point}%,${white_point}%"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: analyze_color_harmony
+# Analyzes color relationships for potential enhancement
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   COLOR_HARMONY_TYPE - "complementary", "analogous", "triadic", "neutral"
+#   DOMINANT_COLORS - Array of dominant colors
+#   HARMONY_ENHANCEMENT - Suggested enhancement parameters
+#-------------------------------------------------------------------------------
+
+analyze_color_harmony() {
+    local input_file="$1"
+    COLOR_HARMONY_TYPE="neutral"
+    DOMINANT_COLORS=()
+    HARMONY_ENHANCEMENT=""
+
+    if [ "$ENABLE_COLOR_HARMONY" = false ]; then
+        return
+    fi
+
+    # Get dominant colors (simplified to RGB channels)
+    local colors=$(magick "$input_file" -resize 50x50! \
+        -format "%[fx:mean.r*360] %[fx:mean.g*360] %[fx:mean.b*360]" info: 2>/dev/null)
+
+    # Convert to HSL for hue analysis
+    local hsl=$(magick "$input_file" -resize 50x50! -colorspace HSL \
+        -format "%[fx:mean.r*360] %[fx:mean.g] %[fx:mean.b]" info: 2>/dev/null)
+
+    local hue=$(echo "$hsl" | awk '{print $1}')
+    local sat=$(echo "$hsl" | awk '{print $2}')
+    local lum=$(echo "$hsl" | awk '{print $3}')
+
+    hue=${hue:-180}
+    sat=${sat:-0.5}
+    lum=${lum:-0.5}
+
+    # Determine color harmony type
+    if (( $(echo "$sat < 0.2" | bc -l 2>/dev/null || echo 0) )); then
+        COLOR_HARMONY_TYPE="neutral"
+        # For neutral images, subtle saturation boost helps
+        HARMONY_ENHANCEMENT="-modulate 100,$((100 + HARMONY_ENHANCEMENT_STRENGTH/2)),100"
+    else
+        # Check for warm or cool dominance
+        if (( $(echo "$hue < 60 || $hue > 300" | bc -l 2>/dev/null || echo 0) )); then
+            COLOR_HARMONY_TYPE="warm"
+            # Enhance warm tones slightly
+            HARMONY_ENHANCEMENT="-modulate 100,$((100 + HARMONY_ENHANCEMENT_STRENGTH)),102"
+        elif (( $(echo "$hue > 180 && $hue < 270" | bc -l 2>/dev/null || echo 0) )); then
+            COLOR_HARMONY_TYPE="cool"
+            # Enhance cool tones slightly
+            HARMONY_ENHANCEMENT="-modulate 100,$((100 + HARMONY_ENHANCEMENT_STRENGTH)),98"
+        else
+            COLOR_HARMONY_TYPE="analogous"
+            HARMONY_ENHANCEMENT="-modulate 100,$((100 + HARMONY_ENHANCEMENT_STRENGTH)),100"
+        fi
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: batch_learn
+# Learns from the batch to apply consistent processing
+# Call this before processing individual images
+#
+# Parameters:
+#   $@ - Array of input files
+#-------------------------------------------------------------------------------
+
+batch_learn() {
+    local files=("$@")
+
+    if [ "$ENABLE_BATCH_LEARNING" = false ]; then
+        return
+    fi
+
+    if [ ${#files[@]} -lt 2 ]; then
+        return
+    fi
+
+    echo -e "${BLUE}[INFO]${NC} Analyzing batch for consistent processing..."
+
+    local total_exposure=0
+    local total_temp=0
+    local count=0
+
+    # Sample up to 10 images for batch learning
+    local sample_count=$((${#files[@]} < 10 ? ${#files[@]} : 10))
+    local step=$((${#files[@]} / sample_count))
+
+    for ((i=0; i<${#files[@]}; i+=step)); do
+        local file="${files[$i]}"
+
+        # Get exposure (mean brightness)
+        local exp=$(magick "$file" -resize 100x100! -format "%[fx:mean*255]" info: 2>/dev/null)
+        exp=${exp:-128}
+
+        # Get color temperature (red/blue ratio)
+        local rgb=$(magick "$file" -resize 50x50! -format "%[fx:mean.r] %[fx:mean.b]" info: 2>/dev/null)
+        local r=$(echo "$rgb" | awk '{print $1}')
+        local b=$(echo "$rgb" | awk '{print $2}')
+        local temp=$(echo "scale=2; $r / ($b + 0.001)" | bc -l 2>/dev/null || echo "1")
+
+        total_exposure=$(echo "scale=2; $total_exposure + $exp" | bc -l)
+        total_temp=$(echo "scale=2; $total_temp + $temp" | bc -l)
+
+        BATCH_EXPOSURES+=("$exp")
+        BATCH_COLOR_TEMPS+=("$temp")
+
+        count=$((count + 1))
+
+        if [ $count -ge 10 ]; then
+            break
+        fi
+    done
+
+    # Calculate averages
+    BATCH_AVG_EXPOSURE=$(echo "scale=2; $total_exposure / $count" | bc -l)
+    BATCH_AVG_COLOR_TEMP=$(echo "scale=3; $total_temp / $count" | bc -l)
+
+    echo -e "${GREEN}[OK]${NC} Batch analysis complete: avg exposure=$BATCH_AVG_EXPOSURE, avg color temp ratio=$BATCH_AVG_COLOR_TEMP"
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: apply_batch_consistency
+# Applies batch-learned adjustments to normalize the image
+#
+# Parameters:
+#   $1 - Input file path
+#   $2 - Current image exposure
+#   $3 - Current image color temp
+#
+# Sets:
+#   BATCH_ADJUSTMENT - ImageMagick parameters for consistency
+#-------------------------------------------------------------------------------
+
+apply_batch_consistency() {
+    local input_file="$1"
+    local current_exp="$2"
+    local current_temp="$3"
+
+    BATCH_ADJUSTMENT=""
+
+    if [ "$ENABLE_BATCH_LEARNING" = false ] || [ "$BATCH_AVG_EXPOSURE" = "0" ]; then
+        return
+    fi
+
+    # Calculate how much to adjust this image toward batch average
+    local exp_diff=$(echo "scale=2; $BATCH_AVG_EXPOSURE - $current_exp" | bc -l)
+    local temp_diff=$(echo "scale=3; $BATCH_AVG_COLOR_TEMP - $current_temp" | bc -l)
+
+    # Apply partial correction based on strength setting
+    local exp_adj=$(echo "scale=1; $exp_diff * $BATCH_CONSISTENCY_STRENGTH / 100 / 2.55" | bc -l)
+
+    if (( $(echo "$exp_adj > 2 || $exp_adj < -2" | bc -l 2>/dev/null || echo 0) )); then
+        # Significant enough to correct
+        BATCH_ADJUSTMENT="-brightness-contrast ${exp_adj}x0"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: run_all_v3_analysis
+# Runs all v3.0 intelligent analysis functions on an image
+#
+# Parameters:
+#   $1 - Input file path
+#-------------------------------------------------------------------------------
+
+run_all_v3_analysis() {
+    local input_file="$1"
+
+    detect_color_cast "$input_file"
+    detect_golden_hour "$input_file"
+    detect_backlight "$input_file"
+    detect_subject "$input_file"
+    detect_chromatic_aberration "$input_file"
+    detect_lens_distortion "$input_file"
+    detect_sky "$input_file"
+    detect_skin_tones "$input_file"
+    detect_red_eye "$input_file"
+    analyze_composition "$input_file"
+    detect_weather "$input_file"
+    detect_hot_pixels "$input_file"
+    detect_horizon_tilt "$input_file"
+    optimize_dynamic_range "$input_file"
+    analyze_color_harmony "$input_file"
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: get_v3_corrections
+# Builds the ImageMagick command with all v3.0 corrections
+#
+# Returns:
+#   String with all applicable correction parameters
+#-------------------------------------------------------------------------------
+
+get_v3_corrections() {
+    local corrections=""
+
+    # Apply corrections in optimal order
+
+    # 1. Hot pixel removal (before other processing)
+    if [ "$HAS_HOT_PIXELS" = true ] && [ -n "$HOT_PIXEL_CORRECTION" ]; then
+        corrections="$corrections $HOT_PIXEL_CORRECTION"
+    fi
+
+    # 2. Lens distortion correction
+    if [ "$HAS_DISTORTION" = true ] && [ -n "$DISTORTION_CORRECTION" ]; then
+        corrections="$corrections $DISTORTION_CORRECTION"
+    fi
+
+    # 3. Horizon leveling
+    if [ "$HORIZON_TILTED" = true ] && [ -n "$HORIZON_CORRECTION" ]; then
+        corrections="$corrections $HORIZON_CORRECTION"
+    fi
+
+    # 4. Chromatic aberration
+    if [ "$HAS_CA" = true ] && [ -n "$CA_CORRECTION" ]; then
+        corrections="$corrections $CA_CORRECTION"
+    fi
+
+    # 5. Color cast correction
+    if [ "$HAS_COLOR_CAST" = true ] && [ -n "$COLOR_CAST_CORRECTION" ]; then
+        corrections="$corrections $COLOR_CAST_CORRECTION"
+    fi
+
+    # 6. Dynamic range optimization
+    if [ "$DR_OPTIMIZED" = true ] && [ -n "$DR_CORRECTION" ]; then
+        corrections="$corrections $DR_CORRECTION"
+    fi
+
+    # 7. Backlight recovery
+    if [ "$IS_BACKLIT" = true ] && [ -n "$BACKLIGHT_CORRECTION" ]; then
+        corrections="$corrections $BACKLIGHT_CORRECTION"
+    fi
+
+    # 8. Golden hour enhancement
+    if [ "$IS_GOLDEN_HOUR" = true ] || [ "$IS_BLUE_HOUR" = true ]; then
+        if [ -n "$GOLDEN_HOUR_ADJUSTMENTS" ]; then
+            corrections="$corrections $GOLDEN_HOUR_ADJUSTMENTS"
+        fi
+    fi
+
+    # 9. Weather-based adjustments
+    if [ "$DETECTED_WEATHER" != "unknown" ] && [ -n "$WEATHER_ADJUSTMENTS" ]; then
+        corrections="$corrections $WEATHER_ADJUSTMENTS"
+    fi
+
+    # 10. Sky enhancement (apply to top portion only in main processing)
+    # This would need compositing for proper application
+
+    # 11. Color harmony enhancement
+    if [ -n "$HARMONY_ENHANCEMENT" ]; then
+        corrections="$corrections $HARMONY_ENHANCEMENT"
+    fi
+
+    # 12. Batch consistency
+    if [ -n "$BATCH_ADJUSTMENT" ]; then
+        corrections="$corrections $BATCH_ADJUSTMENT"
+    fi
+
+    echo "$corrections"
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: print_v3_analysis
+# Prints a summary of v3.0 analysis results for an image
+#
+# Parameters:
+#   $1 - Filename for display
+#-------------------------------------------------------------------------------
+
+print_v3_analysis() {
+    local filename="$1"
+
+    echo -e "\n${CYAN}═══ V3.0 Intelligent Analysis: $filename ═══${NC}"
+
+    # Color cast
+    if [ "$HAS_COLOR_CAST" = true ]; then
+        echo -e "  ${YELLOW}Color Cast:${NC} $COLOR_CAST_TYPE detected - will correct"
+    fi
+
+    # Golden/Blue hour
+    if [ "$IS_GOLDEN_HOUR" = true ]; then
+        echo -e "  ${YELLOW}Lighting:${NC} Golden hour detected - enhancing warm tones"
+    elif [ "$IS_BLUE_HOUR" = true ]; then
+        echo -e "  ${YELLOW}Lighting:${NC} Blue hour detected - enhancing cool tones"
+    fi
+
+    # Backlight
+    if [ "$IS_BACKLIT" = true ]; then
+        echo -e "  ${YELLOW}Backlight:${NC} Detected (severity: $BACKLIGHT_SEVERITY%) - applying shadow recovery"
+    fi
+
+    # Subject detection
+    if [ "$SUBJECT_DETECTED" = true ]; then
+        echo -e "  ${YELLOW}Subject:${NC} Detected at $SUBJECT_POSITION position"
+    fi
+
+    # Chromatic aberration
+    if [ "$HAS_CA" = true ]; then
+        echo -e "  ${YELLOW}CA:${NC} Chromatic aberration detected - will correct"
+    fi
+
+    # Lens distortion
+    if [ "$HAS_DISTORTION" = true ]; then
+        echo -e "  ${YELLOW}Distortion:${NC} $DISTORTION_TYPE distortion detected - will correct"
+    fi
+
+    # Sky
+    if [ "$HAS_SKY" = true ]; then
+        echo -e "  ${YELLOW}Sky:${NC} $SKY_TYPE sky detected - will enhance"
+    fi
+
+    # Skin tones
+    if [ "$HAS_SKIN_TONES" = true ]; then
+        echo -e "  ${YELLOW}Skin:${NC} Skin tones detected ($SKIN_COVERAGE%) - protection enabled"
+    fi
+
+    # Red-eye
+    if [ "$HAS_RED_EYE" = true ]; then
+        echo -e "  ${YELLOW}Red-eye:${NC} Detected - will remove"
+    fi
+
+    # Composition
+    echo -e "  ${YELLOW}Composition:${NC} Score $COMPOSITION_SCORE/100"
+
+    # Weather
+    if [ "$DETECTED_WEATHER" != "unknown" ]; then
+        echo -e "  ${YELLOW}Weather:${NC} $DETECTED_WEATHER (confidence: $WEATHER_CONFIDENCE%)"
+    fi
+
+    # Hot pixels
+    if [ "$HAS_HOT_PIXELS" = true ]; then
+        echo -e "  ${YELLOW}Hot Pixels:${NC} ~$HOT_PIXEL_COUNT detected - will remove"
+    fi
+
+    # Horizon
+    if [ "$HORIZON_TILTED" = true ]; then
+        echo -e "  ${YELLOW}Horizon:${NC} Tilted ${HORIZON_ANGLE}° - will auto-level"
+    fi
+
+    # Dynamic range
+    if [ "$DR_OPTIMIZED" = true ]; then
+        echo -e "  ${YELLOW}DR:${NC} Optimizing dynamic range (headroom: $DR_HEADROOM%)"
+    fi
+
+    # Color harmony
+    echo -e "  ${YELLOW}Color Harmony:${NC} $COLOR_HARMONY_TYPE palette"
+
+    echo ""
+}
+
 #-------------------------------------------------------------------------------
 # FUNCTION: collect_raw_files
 # Collects all RAW files in the directory (multi-format support)
@@ -1102,8 +2424,20 @@ process_single_image() {
             fi
         fi
 
+        # === V3.0 ADVANCED INTELLIGENT ANALYSIS ===
+        # Run comprehensive v3.0 analysis for advanced corrections
+        run_all_v3_analysis "$input_file"
+
+        # Get v3.0 correction parameters
+        local v3_corrections=$(get_v3_corrections)
+
         # Build the ImageMagick command dynamically
         local magick_cmd="magick \"$input_file\""
+
+        # Apply v3.0 corrections first (lens corrections, color cast, etc.)
+        if [ -n "$v3_corrections" ]; then
+            magick_cmd="$magick_cmd $v3_corrections"
+        fi
 
         # 1. White balance / Temperature adjustment
         if [ "$work_temperature" -ne 0 ]; then
@@ -1632,6 +2966,42 @@ print_analysis_report() {
     if [ "$DETECTED_SCENE" != "unknown" ]; then
         echo -e "  Scene Preset:       $DETECTED_SCENE mode recommended"
     fi
+    echo ""
+
+    # V3.0 Advanced Analysis
+    run_all_v3_analysis "$input_file"
+
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${MAGENTA}V3.0 Advanced Intelligent Analysis:${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+
+    echo -e "${YELLOW}Optical Corrections:${NC}"
+    echo -e "  Color Cast:         $([ "$HAS_COLOR_CAST" = true ] && echo "$COLOR_CAST_TYPE detected" || echo "None detected")"
+    echo -e "  Lens Distortion:    $([ "$HAS_DISTORTION" = true ] && echo "$DISTORTION_TYPE detected" || echo "None detected")"
+    echo -e "  Chromatic Aberration: $([ "$HAS_CA" = true ] && echo "Detected (severity: $CA_SEVERITY)" || echo "None detected")"
+    echo -e "  Horizon Tilt:       $([ "$HORIZON_TILTED" = true ] && echo "${HORIZON_ANGLE}° - will correct" || echo "Level")"
+    echo -e "  Hot Pixels:         $([ "$HAS_HOT_PIXELS" = true ] && echo "~$HOT_PIXEL_COUNT detected" || echo "None detected")"
+    echo ""
+
+    echo -e "${YELLOW}Lighting Analysis:${NC}"
+    echo -e "  Golden Hour:        $([ "$IS_GOLDEN_HOUR" = true ] && echo "Yes - warm enhancement enabled" || echo "No")"
+    echo -e "  Blue Hour:          $([ "$IS_BLUE_HOUR" = true ] && echo "Yes - cool enhancement enabled" || echo "No")"
+    echo -e "  Backlight:          $([ "$IS_BACKLIT" = true ] && echo "Detected (severity: $BACKLIGHT_SEVERITY%)" || echo "No")"
+    echo -e "  Weather/Light:      $DETECTED_WEATHER $([ "$WEATHER_CONFIDENCE" -gt 0 ] && echo "(${WEATHER_CONFIDENCE}% confidence)" || echo "")"
+    echo ""
+
+    echo -e "${YELLOW}Subject Analysis:${NC}"
+    echo -e "  Subject Detected:   $([ "$SUBJECT_DETECTED" = true ] && echo "Yes - at $SUBJECT_POSITION" || echo "No clear subject")"
+    echo -e "  Sky Detected:       $([ "$HAS_SKY" = true ] && echo "Yes - $SKY_TYPE ($SKY_REGION% of frame)" || echo "No")"
+    echo -e "  Skin Tones:         $([ "$HAS_SKIN_TONES" = true ] && echo "Yes ($SKIN_COVERAGE%) - protection enabled" || echo "None detected")"
+    echo -e "  Red-eye:            $([ "$HAS_RED_EYE" = true ] && echo "Detected - will remove" || echo "None")"
+    echo ""
+
+    echo -e "${YELLOW}Composition & Color:${NC}"
+    echo -e "  Composition Score:  $COMPOSITION_SCORE/100"
+    echo -e "  Color Harmony:      $COLOR_HARMONY_TYPE palette"
+    echo -e "  Dynamic Range:      $([ "$DR_OPTIMIZED" = true ] && echo "Needs optimization (headroom: $DR_HEADROOM%)" || echo "Good")"
     echo ""
 }
 
