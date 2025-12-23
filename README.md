@@ -1,44 +1,86 @@
-# RAW Photo Batch Processor v1.0
+# RAW Photo Batch Processor v2.0
 
-A professional-grade bash script for batch processing Canon RAW (.CR2) files with **intelligent per-image analysis**, professional presets, and comprehensive editing tools.
+A professional-grade bash script for batch processing RAW files with **AI-like intelligent analysis**, multi-format support, parallel processing, and comprehensive editing tools.
 
 ---
 
 ## Table of Contents
 
-1. [Features](#features)
-2. [Requirements](#requirements)
-3. [Installation](#installation)
-4. [Quick Start](#quick-start)
-5. [Command Line Reference](#command-line-reference)
-6. [Presets](#presets)
-7. [Adjustment Controls](#adjustment-controls)
-8. [Output Options](#output-options)
-9. [Analysis & Preview Modes](#analysis--preview-modes)
-10. [Intelligent Processing Pipeline](#intelligent-processing-pipeline)
-11. [Configuration File](#configuration-file)
-12. [Examples](#examples)
-13. [Technical Reference](#technical-reference)
-14. [Troubleshooting](#troubleshooting)
-15. [Supported RAW Formats](#supported-raw-formats)
+1. [What's New in v2.0](#whats-new-in-v20)
+2. [Features](#features)
+3. [Requirements](#requirements)
+4. [Installation](#installation)
+5. [Quick Start](#quick-start)
+6. [Command Line Reference](#command-line-reference)
+7. [Presets](#presets)
+8. [Adjustment Controls](#adjustment-controls)
+9. [Output Options](#output-options)
+10. [Analysis & Preview Modes](#analysis--preview-modes)
+11. [Intelligent Processing Pipeline](#intelligent-processing-pipeline)
+12. [Configuration File](#configuration-file)
+13. [Examples](#examples)
+14. [Technical Reference](#technical-reference)
+15. [Troubleshooting](#troubleshooting)
+16. [Supported RAW Formats](#supported-raw-formats)
+
+---
+
+## What's New in v2.0
+
+### Multi-Format RAW Support
+Process files from any major camera manufacturer without configuration changes:
+- **Canon**: CR2, CR3
+- **Nikon**: NEF
+- **Sony**: ARW
+- **Fujifilm**: RAF
+- **Olympus**: ORF
+- **Panasonic**: RW2
+- **Pentax**: PEF
+- **Samsung**: SRW
+- **Adobe**: DNG
+- **Hasselblad**: 3FR
+- **Phase One**: IIQ
+
+### Intelligent Features
+- **EXIF-Based Intelligence** - Uses ISO, aperture, shutter speed, and focal length for smart decisions
+- **Face Detection** - Automatically detects portraits and applies optimized settings
+- **Scene Detection** - Identifies landscape, portrait, night, indoor, and macro scenes
+- **Adaptive Noise Reduction** - ISO-based automatic noise reduction
+- **Blur Detection** - Measures sharpness and adjusts accordingly
+- **Histogram Analysis** - Advanced exposure analysis with clipping detection
+
+### Performance
+- **Parallel Processing** - Multi-core support for dramatically faster batch processing
+- **Progress Bar with ETA** - Visual progress with accurate time estimates
+
+### Metadata
+- **EXIF Preservation** - Copies EXIF, IPTC, and XMP metadata to output files
 
 ---
 
 ## Features
 
 ### Core Features
+- **Multi-Format RAW Support** - Process CR2, NEF, ARW, ORF, RAF, DNG, and more
 - **Intelligent Per-Image Analysis** - Automatically analyzes each photo and calculates optimal corrections
 - **7 Professional Presets** - One-click styles for different photography types
 - **Batch Processing** - Process hundreds of RAW files automatically
 - **High-Quality Output** - Maximum quality JPEG, PNG, or TIFF output
+
+### Intelligent Detection (v2.0)
+- **Face Detection** - Detects portraits and auto-applies flattering settings
+- **Scene Detection** - Identifies landscape, portrait, night, indoor, macro scenes
+- **Blur Detection** - Measures image sharpness using Laplacian variance
+- **EXIF Intelligence** - Uses camera data for smarter processing decisions
+- **Histogram Analysis** - Detects clipping and exposure distribution
 
 ### Advanced Adjustments
 - **Exposure Control** - Brightness, highlights, shadows
 - **Contrast & Clarity** - Fine-tune image punch and local contrast
 - **White Balance** - Temperature and tint adjustments
 - **Color Control** - Saturation and vibrance
-- **Noise Reduction** - Adjustable noise removal
-- **Sharpening** - Professional unsharp mask
+- **Noise Reduction** - Adjustable or automatic ISO-based removal
+- **Sharpening** - Professional unsharp mask with adaptive control
 
 ### Output Options
 - **Resize** - By dimension or percentage
@@ -46,6 +88,13 @@ A professional-grade bash script for batch processing Canon RAW (.CR2) files wit
 - **Web Versions** - Auto-generate optimized copies
 - **Multiple Formats** - JPEG, PNG, TIFF
 - **Custom Output Directory** - Organize processed files
+- **Metadata Preservation** - Keep EXIF, IPTC, XMP data
+
+### Performance Features (v2.0)
+- **Parallel Processing** - Use multiple CPU cores
+- **Progress Bar** - Visual progress with percentage
+- **ETA Calculation** - Accurate time remaining estimates
+- **Auto CPU Detection** - Automatically uses optimal core count
 
 ### Workflow Features
 - **Analysis Mode** - Preview corrections without processing
@@ -73,6 +122,21 @@ sudo dnf install ImageMagick
 # Download from: https://imagemagick.org/script/download.php
 ```
 
+### ExifTool (Recommended for v2.0 features)
+
+Required for EXIF intelligence and metadata preservation:
+
+```bash
+# macOS (using Homebrew)
+brew install exiftool
+
+# Ubuntu/Debian
+sudo apt-get install libimage-exiftool-perl
+
+# Fedora/RHEL
+sudo dnf install perl-Image-ExifTool
+```
+
 ### bc Calculator (Required)
 
 Usually pre-installed on macOS and Linux. If not:
@@ -89,12 +153,29 @@ brew install bc
 
 ```bash
 magick -version
+exiftool -ver
 bc --version
 ```
 
 ---
 
 ## Installation
+
+### From GitHub
+
+```bash
+# Clone the repository
+git clone https://github.com/marcosfermin/process_raw_photos.git
+cd process_raw_photos
+
+# Make executable
+chmod +x process_raw_photos.sh
+
+# Verify it works
+./process_raw_photos.sh --help
+```
+
+### Manual Installation
 
 1. Download the script to your desired location
 2. Make it executable:
@@ -121,7 +202,30 @@ export PATH="$PATH:/path/to/script/directory"
 cd /path/to/your/photos
 
 # Run with intelligent analysis (default)
-/path/to/process_raw_photos.sh
+./process_raw_photos.sh
+```
+
+### Process All RAW Formats
+
+```bash
+# Auto-detect and process all supported RAW formats
+./process_raw_photos.sh --auto-format
+
+# Process only Nikon files
+./process_raw_photos.sh --format NEF
+
+# Process only Sony files
+./process_raw_photos.sh --format ARW
+```
+
+### Use Parallel Processing (v2.0)
+
+```bash
+# Use 4 CPU cores
+./process_raw_photos.sh --parallel 4
+
+# Auto-detect and use all available cores
+./process_raw_photos.sh --parallel 0
 ```
 
 ### Use a Preset
@@ -135,7 +239,7 @@ cd /path/to/your/photos
 ### Analyze Before Processing
 
 ```bash
-# See what corrections would be applied
+# See detailed analysis including scene detection, EXIF data, and recommendations
 ./process_raw_photos.sh --analyze
 
 # Test on a single file
@@ -209,7 +313,7 @@ cd /path/to/your/photos
 
 | Option | Range | Description |
 |--------|-------|-------------|
-| `--noise-reduction VALUE` | 0 to 100 | Noise reduction strength |
+| `--noise-reduction VALUE` | 0 to 100 | Noise reduction strength (or use adaptive) |
 | `--sharpen VALUE` | 0 to 2 | Sharpening amount (default: 0.5) |
 
 #### Output Options
@@ -235,6 +339,20 @@ cd /path/to/your/photos
 | `--preview FILE` | Process single file to test settings |
 | `--no-analysis` | Disable intelligent per-image analysis |
 
+#### Intelligent Processing (v2.0)
+
+| Option | Description |
+|--------|-------------|
+| `--parallel N` | Use N parallel jobs (0 = auto-detect CPU cores) |
+| `--format EXT` | RAW format to process (CR2, NEF, ARW, etc.) |
+| `--auto-format` | Auto-detect all RAW formats in directory (default) |
+| `--no-face-detection` | Disable automatic face detection |
+| `--no-scene-detection` | Disable automatic scene detection |
+| `--no-adaptive-noise` | Disable ISO-based noise reduction |
+| `--no-blur-detection` | Disable blur detection |
+| `--preserve-metadata` | Preserve EXIF/IPTC/XMP metadata (default: on) |
+| `--no-preserve-metadata` | Don't copy metadata to output files |
+
 ---
 
 ## Presets
@@ -245,7 +363,7 @@ Presets provide one-click styles optimized for different types of photography.
 
 | Preset | Description | Best For |
 |--------|-------------|----------|
-| `auto` | Intelligent per-image analysis and correction (default) | General use, mixed lighting |
+| `auto` | Intelligent per-image analysis with scene detection (default) | General use, mixed content |
 | `portrait` | Soft, flattering look with skin-friendly settings | People, headshots, events |
 | `vivid` | Punchy colors, high saturation and contrast | Landscapes, products, food |
 | `soft` | Dreamy, muted tones with low contrast | Artistic, romantic, lifestyle |
@@ -258,8 +376,12 @@ Presets provide one-click styles optimized for different types of photography.
 #### `auto` (Default)
 ```
 Intelligent Analysis: ON
+Scene Detection: ON
+Face Detection: ON
 - Analyzes exposure, contrast, and color cast per image
-- Calculates optimal corrections automatically
+- Detects scene type and applies appropriate adjustments
+- Detects faces and applies portrait optimizations
+- Uses EXIF data for ISO-based noise reduction
 - Adapts to each image's unique characteristics
 ```
 
@@ -508,26 +630,40 @@ Smart saturation that boosts less-saturated colors more than already-saturated o
 
 #### Noise Reduction (`--noise-reduction`)
 
-Reduces digital noise (grain) in images.
+Reduces digital noise (grain) in images. In v2.0, this can be automatic based on ISO.
 
 | Value | Range | Effect |
 |-------|-------|--------|
-| 0 | - | No noise reduction |
+| 0 | - | No noise reduction (or use adaptive) |
 | 1-29 | Light | Single despeckle pass |
 | 30-59 | Medium | Double despeckle pass |
 | 60-100 | Heavy | Blur-based reduction with resharpening |
 
-```bash
-# Light noise reduction
-./process_raw_photos.sh --noise-reduction 20
+**Adaptive Noise Reduction (v2.0)**
 
-# Heavy noise reduction for high-ISO images
-./process_raw_photos.sh --noise-reduction 70
+When ExifTool is available and `--no-adaptive-noise` is not set, noise reduction is automatically calculated based on ISO:
+
+| ISO Range | Auto NR Level |
+|-----------|---------------|
+| 0-400 | 0 (none) |
+| 401-800 | 10 |
+| 801-1600 | 25 |
+| 1601-3200 | 40 |
+| 3201-6400 | 55 |
+| 6401-12800 | 70 |
+| 12800+ | 85 |
+
+```bash
+# Manual noise reduction
+./process_raw_photos.sh --noise-reduction 50
+
+# Disable adaptive (use manual only)
+./process_raw_photos.sh --no-adaptive-noise --noise-reduction 30
 ```
 
 #### Sharpening (`--sharpen`)
 
-Controls the sharpening amount applied after processing.
+Controls the sharpening amount applied after processing. In v2.0, this adapts based on blur detection.
 
 | Value | Effect |
 |-------|--------|
@@ -537,12 +673,18 @@ Controls the sharpening amount applied after processing.
 | 0.7 | Strong sharpening |
 | 1.0+ | Very strong sharpening |
 
-```bash
-# Subtle sharpening for portraits
-./process_raw_photos.sh --sharpen 0.3
+**Adaptive Sharpening (v2.0)**
 
-# Strong sharpening for landscapes
+When blur detection is enabled:
+- Blurry images: Sharpening increased by 50% (max 1.0)
+- Very sharp images: Sharpening reduced by 30% to avoid artifacts
+
+```bash
+# Manual sharpening
 ./process_raw_photos.sh --sharpen 0.8
+
+# Disable adaptive sharpening
+./process_raw_photos.sh --no-blur-detection --sharpen 0.5
 ```
 
 ---
@@ -655,24 +797,50 @@ Output files:
 - `IMG_0001_edited.jpg` (full size)
 - `IMG_0001_edited_web.jpg` (web version)
 
+### Metadata Preservation (`--preserve-metadata`)
+
+Copy EXIF, IPTC, and XMP metadata from RAW files to output JPEGs.
+
+```bash
+# Preserve all metadata (default when ExifTool is available)
+./process_raw_photos.sh --preserve-metadata
+
+# Don't preserve metadata
+./process_raw_photos.sh --no-preserve-metadata
+```
+
 ---
 
 ## Analysis & Preview Modes
 
 ### Analysis Mode (`--analyze`)
 
-Analyze all images without processing. Shows detailed metrics and recommended corrections for each image.
+Analyze all images without processing. Shows detailed metrics and recommended corrections for each image, including v2.0 intelligent detection results.
 
 ```bash
 ./process_raw_photos.sh --analyze
 ```
 
-#### Output Example
+#### Output Example (v2.0)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Image: IMG_0001.CR2
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Camera/EXIF Data:
+  Camera:             Canon EOS R5
+  Lens:               RF24-70mm F2.8 L IS USM
+  ISO:                800
+  Aperture:           2.8
+  Shutter:            1/200
+  Focal Length:       50mm
+  Flash:              Not fired
+
+Intelligent Detection:
+  Scene Type:         portrait (90% confidence)
+  Faces Detected:     Yes
+  Sharpness Score:    156.3 (Sharp)
 
 Exposure Analysis:
   Mean Brightness:    95.3 / 255
@@ -680,9 +848,11 @@ Exposure Analysis:
   Contrast (StdDev):  52.4
   Status:             underexposed
 
-Highlight/Shadow Clipping:
-  Clipped Highlights: 1.2%
-  Clipped Shadows:    3.5%
+Histogram Analysis:
+  Shadow Clipping:    3.5%
+  Highlight Clipping: 1.2%
+  Midtone Peak:       95
+  Distribution:       left-heavy
 
 Color Analysis:
   Red Channel:        98.2
@@ -696,6 +866,9 @@ Recommended Corrections:
   Highlights:         0
   Shadows:            7
   Temperature:        -15
+  Noise Reduction:    10 (based on ISO 800)
+  Sharpening:         0.5
+  Scene Preset:       portrait mode recommended
 ```
 
 ### Preview Mode (`--preview`)
@@ -714,7 +887,7 @@ Process a single file to test your settings before batch processing.
 ```
 
 Preview mode:
-1. Displays full analysis of the image
+1. Displays full analysis of the image (including v2.0 intelligent detection)
 2. Shows recommended corrections
 3. Processes the single file
 4. Reports success and output file size
@@ -723,9 +896,58 @@ Preview mode:
 
 ## Intelligent Processing Pipeline
 
-When intelligent analysis is enabled (default), each image goes through this pipeline:
+When intelligent analysis is enabled (default), each image goes through this enhanced v2.0 pipeline:
 
-### 1. Image Analysis
+### 1. EXIF Data Extraction (v2.0)
+
+Extracts camera metadata for intelligent decisions:
+
+| Data | Used For |
+|------|----------|
+| ISO | Adaptive noise reduction |
+| Aperture | Depth of field estimation |
+| Shutter Speed | Motion blur detection |
+| Focal Length | Scene type hints |
+| Camera Model | Camera-specific tuning |
+| Flash | Indoor scene detection |
+
+### 2. Face Detection (v2.0)
+
+Analyzes image for portrait characteristics:
+- Skin tone detection via HSL color analysis
+- Centered subject detection
+- If faces detected: applies portrait-optimized settings
+
+### 3. Scene Detection (v2.0)
+
+Automatically identifies scene type:
+
+| Scene | Detection Method | Applied Adjustments |
+|-------|------------------|---------------------|
+| Portrait | Face detected, centered subject | Softer, reduced sharpening |
+| Landscape | Wide aspect ratio, blue/green colors | Increased saturation, clarity |
+| Night | Low brightness, high ISO | Shadow lift, extra noise reduction |
+| Indoor | Flash fired, low saturation | Warmer temperature |
+| Macro | Short focal length, high center detail | Maximum sharpness, vibrance |
+
+### 4. Blur Detection (v2.0)
+
+Measures image sharpness using Laplacian variance:
+- High variance = sharp image (reduce sharpening)
+- Low variance = blurry image (increase sharpening)
+
+### 5. Histogram Analysis (v2.0)
+
+Advanced exposure analysis:
+
+| Metric | Description | Used For |
+|--------|-------------|----------|
+| Shadow Clipping | % of pure black pixels | Shadow recovery |
+| Highlight Clipping | % of pure white pixels | Highlight recovery |
+| Midtone Peak | Position of histogram center | Exposure adjustment |
+| Distribution | left-heavy, normal, right-heavy | Correction strategy |
+
+### 6. Standard Image Analysis
 
 For each image, the script analyzes:
 
@@ -735,12 +957,10 @@ For each image, the script analyzes:
 | Standard Deviation | Contrast indicator | Contrast adjustment |
 | Min/Max Values | Dynamic range | Clipping detection |
 | Channel Means (R/G/B) | Per-channel averages | Color cast detection |
-| Clipped Highlights | % of pure white pixels | Highlight recovery |
-| Clipped Shadows | % of pure black pixels | Shadow recovery |
 
-### 2. Correction Calculation
+### 7. Correction Calculation
 
-Based on analysis, the script calculates:
+Based on all analysis, the script calculates optimal corrections:
 
 | Condition | Correction |
 |-----------|------------|
@@ -752,8 +972,10 @@ Based on analysis, the script calculates:
 | Shadows > 2% clipped | Lift shadows |
 | Warm color cast | Cool temperature adjustment |
 | Cool color cast | Warm temperature adjustment |
+| High ISO | Apply noise reduction |
+| Low sharpness | Increase sharpening |
 
-### 3. Processing Order
+### 8. Processing Order
 
 Enhancements are applied in this specific order for optimal results:
 
@@ -766,12 +988,13 @@ Enhancements are applied in this specific order for optimal results:
 7. **Clarity** - Local contrast enhancement
 8. **Modulate** - Brightness and saturation
 9. **Vibrance** - Smart saturation boost
-10. **Noise Reduction** - If enabled
-11. **Sharpening** - Unsharp mask
+10. **Noise Reduction** - Adaptive or manual
+11. **Sharpening** - Adaptive unsharp mask
 12. **Resize** - If requested
 13. **Watermark** - If requested
 14. **Save** - With quality settings
 15. **Web Version** - If requested
+16. **Metadata Preservation** - Copy EXIF/IPTC/XMP
 
 ---
 
@@ -786,6 +1009,10 @@ Default values can be modified by editing the script's configuration section:
 
 # Input file extension
 INPUT_EXTENSION="CR2"
+
+# Multi-format support (v2.0)
+AUTO_DETECT_FORMAT=true
+SUPPORTED_RAW_FORMATS=("CR2" "CR3" "NEF" "ARW" "ORF" "RAF" "DNG" "RW2" "PEF" "SRW" "3FR" "IIQ")
 
 # Output settings
 OUTPUT_FORMAT="jpg"
@@ -827,6 +1054,14 @@ WEB_QUALITY=85
 PRESET="auto"
 USE_INTELLIGENT_ANALYSIS=true
 
+# v2.0 Intelligent Processing Options
+PARALLEL_JOBS=1              # 0 = auto-detect CPU cores
+ENABLE_FACE_DETECTION=true
+ENABLE_SCENE_DETECTION=true
+ENABLE_ADAPTIVE_NOISE=true
+ENABLE_BLUR_DETECTION=true
+PRESERVE_EXIF=true
+
 # Logging
 LOG_FILE="processing_log.txt"
 ENABLE_LOGGING=true
@@ -848,6 +1083,32 @@ ENABLE_LOGGING=true
 # Custom output suffix
 ./process_raw_photos.sh /path/to/photos _final
 # Output: IMG_0001_final.jpg
+```
+
+### Multi-Format Examples (v2.0)
+
+```bash
+# Process all RAW formats found in directory
+./process_raw_photos.sh --auto-format
+
+# Process only Nikon NEF files
+./process_raw_photos.sh --format NEF
+
+# Process Sony ARW files with parallel processing
+./process_raw_photos.sh --format ARW --parallel 4
+```
+
+### Parallel Processing Examples (v2.0)
+
+```bash
+# Use 4 CPU cores
+./process_raw_photos.sh --parallel 4
+
+# Auto-detect and use all available cores
+./process_raw_photos.sh --parallel 0
+
+# Fast processing with all cores and progress bar
+./process_raw_photos.sh --parallel 0 --preset vivid
 ```
 
 ### Preset Examples
@@ -881,7 +1142,7 @@ ENABLE_LOGGING=true
 # Add color pop
 ./process_raw_photos.sh --vibrance 40 --saturation 110
 
-# High-ISO noise reduction
+# High-ISO noise reduction (manual)
 ./process_raw_photos.sh --noise-reduction 50 --sharpen 0.4
 ```
 
@@ -904,7 +1165,7 @@ ENABLE_LOGGING=true
 ### Workflow Examples
 
 ```bash
-# Analyze before processing
+# Analyze before processing (v2.0 - shows scene detection, EXIF, etc.)
 ./process_raw_photos.sh --analyze
 
 # Test settings on one image
@@ -918,7 +1179,8 @@ ENABLE_LOGGING=true
   --output-dir ./final \
   --watermark "Studio Name" \
   --web-version \
-  --web-size 1200
+  --web-size 1200 \
+  --parallel 4
 
 # Quiet mode for scripts
 ./process_raw_photos.sh --quiet --output-dir ./batch_output
@@ -927,10 +1189,10 @@ ENABLE_LOGGING=true
 ### Combined Examples
 
 ```bash
-# Event photography workflow
+# Event photography workflow (fast parallel processing)
 ./process_raw_photos.sh \
   --preset portrait \
-  --noise-reduction 20 \
+  --parallel 0 \
   --resize 4000 \
   --output-dir "./Event Name - Edited" \
   --web-version \
@@ -951,6 +1213,14 @@ ENABLE_LOGGING=true
   --contrast 20 \
   --clarity 30 \
   --format tiff
+
+# Process mixed camera files from a wedding
+./process_raw_photos.sh \
+  --auto-format \
+  --preset portrait \
+  --parallel 4 \
+  --web-version \
+  --preserve-metadata
 ```
 
 ---
@@ -1038,6 +1308,29 @@ Three levels based on value:
 | amount | 0.5 | Sharpening strength |
 | threshold | 0.05 | Minimum contrast to sharpen |
 
+### Blur Detection (v2.0)
+
+Uses Laplacian variance to measure sharpness:
+```
+variance = stddev(convolve(image, laplacian_kernel)) * 10000
+```
+
+| Variance | Interpretation | Action |
+|----------|----------------|--------|
+| < 100 | Blurry | Increase sharpening |
+| 100-200 | Normal | Standard sharpening |
+| > 200 | Very sharp | Reduce sharpening |
+
+### Scene Detection (v2.0)
+
+Decision tree using multiple factors:
+
+1. **Night**: Mean brightness < 60 AND (ISO > 1600 OR brightness < 40)
+2. **Macro**: Focal length < 35mm AND high center detail
+3. **Portrait**: Face detected OR centered bright subject
+4. **Landscape**: Aspect ratio > 1.4 AND (blue > green OR high saturation)
+5. **Indoor**: Flash fired OR saturation < 35%
+
 ### Log File Format
 
 ```
@@ -1064,14 +1357,15 @@ Total: 100 | Success: 100 | Failed: 0
 
 #### Processing Speed
 
-| System | Speed | 100 Images |
-|--------|-------|------------|
-| Apple Silicon (M1/M2/M3) | ~3 sec/image | ~5 minutes |
-| Intel Core i7 | ~5 sec/image | ~8 minutes |
-| Intel Core i5 | ~7 sec/image | ~12 minutes |
+| System | Sequential | Parallel (4 cores) | Parallel (8 cores) |
+|--------|------------|-------------------|-------------------|
+| Apple Silicon (M1/M2/M3) | ~3 sec/image | ~1 sec/image | ~0.5 sec/image |
+| Intel Core i7 | ~5 sec/image | ~1.5 sec/image | ~0.8 sec/image |
+| Intel Core i5 | ~7 sec/image | ~2 sec/image | ~1.2 sec/image |
 
 Additional operations add time:
 - Intelligent analysis: +0.5 sec/image
+- Scene/face detection: +0.3 sec/image
 - Web version: +1 sec/image
 - Noise reduction: +1-3 sec/image
 
@@ -1099,6 +1393,22 @@ brew install imagemagick
 sudo apt-get install imagemagick
 ```
 
+#### "ExifTool not found" (v2.0 warning)
+
+Install ExifTool for full v2.0 features:
+```bash
+# macOS
+brew install exiftool
+
+# Ubuntu
+sudo apt-get install libimage-exiftool-perl
+```
+
+Without ExifTool, the following features are disabled:
+- EXIF-based intelligence
+- Adaptive noise reduction
+- Metadata preservation
+
 #### "bc: command not found"
 
 Install bc calculator:
@@ -1110,10 +1420,11 @@ brew install bc
 sudo apt-get install bc
 ```
 
-#### "No .CR2 files found"
+#### "No RAW files found"
 
 - Check you're in the correct directory
-- Verify files have `.CR2` extension
+- With `--auto-format`: ensure files have supported extensions
+- With `--format EXT`: verify the extension matches your files
 - The match is case-insensitive (CR2, cr2, Cr2 all work)
 
 #### "Permission denied"
@@ -1145,7 +1456,12 @@ sed -i '' 's/\r$//' process_raw_photos.sh
    ./process_raw_photos.sh --no-analysis
    ```
 
-3. Use straight conversion:
+3. Disable scene detection:
+   ```bash
+   ./process_raw_photos.sh --no-scene-detection
+   ```
+
+4. Use straight conversion:
    ```bash
    ./process_raw_photos.sh -n
    ```
@@ -1174,21 +1490,28 @@ sed -i '' 's/\r$//' process_raw_photos.sh
 
 # Increase sharpening
 ./process_raw_photos.sh --sharpen 0.8
+
+# Disable adaptive sharpening
+./process_raw_photos.sh --no-blur-detection
 ```
 
 #### Noisy images
 
 ```bash
+# Manual noise reduction
 ./process_raw_photos.sh --noise-reduction 50
+
+# Let ISO-based adaptive handle it
+./process_raw_photos.sh  # (automatic with ExifTool)
 ```
 
 ### Performance Issues
 
 #### Processing is slow
 
+- Use parallel processing: `--parallel 0` (auto-detect cores)
 - RAW files are large (~25MB each)
 - Intelligent analysis adds ~0.5s per image
-- Consider running overnight for large batches
 - Use `--quiet` mode for slightly faster processing
 
 #### Running out of disk space
@@ -1201,32 +1524,69 @@ sed -i '' 's/\r$//' process_raw_photos.sh
 
 ## Supported RAW Formats
 
-The script is configured for Canon `.CR2` by default. Modify `INPUT_EXTENSION` for other formats:
+### Auto-Detected Formats (v2.0)
 
-| Camera Brand | Extensions | Setting |
-|--------------|------------|---------|
-| Canon | CR2, CR3 | `INPUT_EXTENSION="CR2"` |
-| Nikon | NEF, NRW | `INPUT_EXTENSION="NEF"` |
-| Sony | ARW, SRF | `INPUT_EXTENSION="ARW"` |
-| Fujifilm | RAF | `INPUT_EXTENSION="RAF"` |
-| Olympus | ORF | `INPUT_EXTENSION="ORF"` |
-| Panasonic | RW2 | `INPUT_EXTENSION="RW2"` |
-| Pentax | PEF, DNG | `INPUT_EXTENSION="PEF"` |
-| Adobe | DNG | `INPUT_EXTENSION="DNG"` |
-| Leica | DNG, RWL | `INPUT_EXTENSION="DNG"` |
+With `--auto-format` (default), the script automatically detects and processes all these formats:
 
-To change the format:
+| Camera Brand | Extensions | Notes |
+|--------------|------------|-------|
+| Canon | CR2, CR3 | Full support |
+| Nikon | NEF | Full support |
+| Sony | ARW | Full support |
+| Fujifilm | RAF | Full support |
+| Olympus | ORF | Full support |
+| Panasonic | RW2 | Full support |
+| Pentax | PEF | Full support |
+| Samsung | SRW | Full support |
+| Adobe | DNG | Universal RAW format |
+| Hasselblad | 3FR | Medium format |
+| Phase One | IIQ | Medium format |
+
+### Single-Format Processing
+
+To process only a specific format:
+
+```bash
+# Canon CR2
+./process_raw_photos.sh --format CR2
+
+# Nikon NEF
+./process_raw_photos.sh --format NEF
+
+# Sony ARW
+./process_raw_photos.sh --format ARW
+
+# Adobe DNG
+./process_raw_photos.sh --format DNG
+```
+
+### Adding New Formats
+
+To add support for additional formats, edit the configuration:
+
 ```bash
 # Edit the script
 nano process_raw_photos.sh
 
 # Find and modify:
-INPUT_EXTENSION="NEF"  # Change to your format
+SUPPORTED_RAW_FORMATS=("CR2" "CR3" "NEF" "ARW" "ORF" "RAF" "DNG" "RW2" "PEF" "SRW" "3FR" "IIQ" "NEW_FORMAT")
 ```
 
 ---
 
 ## Version History
+
+### v2.0 (December 2025)
+- **Multi-format RAW support** - CR2, CR3, NEF, ARW, ORF, RAF, DNG, RW2, PEF, SRW, 3FR, IIQ
+- **EXIF-based intelligence** - Uses camera metadata for smart decisions
+- **Face detection** - Auto-detects portraits
+- **Scene detection** - Identifies landscape, portrait, night, indoor, macro
+- **Adaptive noise reduction** - ISO-based automatic noise reduction
+- **Blur detection** - Measures sharpness and adjusts accordingly
+- **Histogram analysis** - Advanced exposure analysis
+- **Parallel processing** - Multi-core support
+- **Progress bar with ETA** - Visual progress tracking
+- **Metadata preservation** - EXIF, IPTC, XMP support
 
 ### v1.0 (December 2025)
 - Initial release
