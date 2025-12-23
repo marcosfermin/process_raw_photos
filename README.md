@@ -1,6 +1,6 @@
 # RAW Photo Batch Processor
 
-[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/marcosfermin/process_raw_photos/releases/tag/v2.0)
+[![Version](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/marcosfermin/process_raw_photos/releases/tag/v3.0)
 [![License](https://img.shields.io/badge/license-GPL%20v3-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
 [![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)]()
@@ -16,22 +16,23 @@ A professional-grade bash script for batch processing RAW files with **AI-like i
 ## Table of Contents
 
 1. [Sample Output](#sample-output)
-2. [What's New in v2.0](#whats-new-in-v20)
-3. [Features](#features)
-4. [Requirements](#requirements)
-5. [Installation](#installation)
-6. [Quick Start](#quick-start)
-7. [Command Line Reference](#command-line-reference)
-8. [Presets](#presets)
-9. [Adjustment Controls](#adjustment-controls)
-10. [Output Options](#output-options)
-11. [Analysis & Preview Modes](#analysis--preview-modes)
-12. [Intelligent Processing Pipeline](#intelligent-processing-pipeline)
-13. [Configuration File](#configuration-file)
-14. [Examples](#examples)
-15. [Technical Reference](#technical-reference)
-16. [Troubleshooting](#troubleshooting)
-17. [Supported RAW Formats](#supported-raw-formats)
+2. [What's New in v3.0](#whats-new-in-v30)
+3. [What's New in v2.0](#whats-new-in-v20)
+4. [Features](#features)
+5. [Requirements](#requirements)
+6. [Installation](#installation)
+7. [Quick Start](#quick-start)
+8. [Command Line Reference](#command-line-reference)
+9. [Presets](#presets)
+10. [Adjustment Controls](#adjustment-controls)
+11. [Output Options](#output-options)
+12. [Analysis & Preview Modes](#analysis--preview-modes)
+13. [Intelligent Processing Pipeline](#intelligent-processing-pipeline)
+14. [Configuration File](#configuration-file)
+15. [Examples](#examples)
+16. [Technical Reference](#technical-reference)
+17. [Troubleshooting](#troubleshooting)
+18. [Supported RAW Formats](#supported-raw-formats)
 
 ---
 
@@ -178,6 +179,38 @@ done
 # Create comparison grid
 montage original.jpg processed.jpg -geometry +2+2 -tile 2x1 comparison.jpg
 ```
+
+---
+
+## What's New in v3.0
+
+### Advanced Optical Corrections
+- **Color Cast Detection & Correction** - Automatically detects and fixes warm/cool/green/magenta color casts
+- **Chromatic Aberration Correction** - Detects and removes purple/green fringing at high-contrast edges
+- **Lens Distortion Correction** - Fixes barrel and pincushion distortion based on focal length
+- **Horizon Auto-Leveling** - Detects tilted horizons and automatically straightens images
+- **Hot Pixel Removal** - Detects and removes stuck bright pixels (common in high ISO/long exposures)
+
+### Intelligent Lighting Analysis
+- **Golden Hour Detection** - Detects golden hour photos and enhances warm tones
+- **Blue Hour Detection** - Detects blue hour photos and optimizes cool tones
+- **Backlight Detection** - Detects backlit subjects and applies HDR-like shadow recovery
+- **Weather/Lighting Detection** - Identifies sunny, cloudy, overcast, foggy, sunset, night conditions
+
+### Advanced Subject Analysis
+- **Subject Isolation** - Detects the main subject and its position in the frame
+- **Sky Detection & Enhancement** - Detects sky type (blue, sunset, overcast, night) and enhances separately
+- **Skin Tone Protection** - Detects skin tones and prevents over-saturation during processing
+- **Red-Eye Detection & Removal** - Detects and fixes red-eye from flash photography
+
+### Composition & Color Intelligence
+- **Composition Analysis** - Scores photos based on rule of thirds alignment (0-100 score)
+- **Color Harmony Analysis** - Detects color palette type (warm, cool, neutral) and enhances accordingly
+- **Dynamic Range Optimization** - Analyzes and maximizes usable dynamic range
+
+### Batch Intelligence
+- **Batch Learning** - Analyzes the batch to learn average exposure and color temperature
+- **Batch Consistency** - Normalizes exposure and color across all images in the batch
 
 ---
 
