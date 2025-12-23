@@ -1083,144 +1083,1244 @@ ENABLE_LOGGING=true
 # Custom output suffix
 ./process_raw_photos.sh /path/to/photos _final
 # Output: IMG_0001_final.jpg
+
+# Process with no enhancements (straight RAW to JPEG conversion)
+./process_raw_photos.sh -n
+
+# Show help
+./process_raw_photos.sh --help
+
+# Show version
+./process_raw_photos.sh --version
 ```
+
+---
 
 ### Multi-Format Examples (v2.0)
 
 ```bash
-# Process all RAW formats found in directory
+# Process all RAW formats found in directory (default behavior)
 ./process_raw_photos.sh --auto-format
+
+# Process only Canon CR2 files
+./process_raw_photos.sh --format CR2
+
+# Process only Canon CR3 files (newer Canon cameras)
+./process_raw_photos.sh --format CR3
 
 # Process only Nikon NEF files
 ./process_raw_photos.sh --format NEF
 
-# Process Sony ARW files with parallel processing
-./process_raw_photos.sh --format ARW --parallel 4
+# Process only Sony ARW files
+./process_raw_photos.sh --format ARW
+
+# Process only Fujifilm RAF files
+./process_raw_photos.sh --format RAF
+
+# Process only Olympus ORF files
+./process_raw_photos.sh --format ORF
+
+# Process only Panasonic RW2 files
+./process_raw_photos.sh --format RW2
+
+# Process only Adobe DNG files
+./process_raw_photos.sh --format DNG
+
+# Process only Pentax PEF files
+./process_raw_photos.sh --format PEF
+
+# Process all formats from a multi-camera shoot
+./process_raw_photos.sh --auto-format --parallel 0
 ```
+
+---
 
 ### Parallel Processing Examples (v2.0)
 
 ```bash
-# Use 4 CPU cores
+# Use 2 CPU cores (light load)
+./process_raw_photos.sh --parallel 2
+
+# Use 4 CPU cores (balanced)
 ./process_raw_photos.sh --parallel 4
 
-# Auto-detect and use all available cores
+# Use 8 CPU cores (heavy load)
+./process_raw_photos.sh --parallel 8
+
+# Auto-detect and use all available cores (fastest)
 ./process_raw_photos.sh --parallel 0
 
-# Fast processing with all cores and progress bar
+# Fast processing with all cores and vivid preset
 ./process_raw_photos.sh --parallel 0 --preset vivid
+
+# Parallel processing with web version generation
+./process_raw_photos.sh --parallel 0 --web-version
+
+# Maximum speed: all cores, quiet mode, no extra features
+./process_raw_photos.sh --parallel 0 --quiet --no-face-detection --no-scene-detection
 ```
+
+---
 
 ### Preset Examples
 
 ```bash
-# Portrait session
+# Auto preset (intelligent analysis - default)
+./process_raw_photos.sh --preset auto
+
+# Portrait - soft, flattering, skin-friendly
 ./process_raw_photos.sh --preset portrait
 
-# Landscape photography
-./process_raw_photos.sh --preset vivid --clarity 30
+# Vivid - punchy colors, high contrast
+./process_raw_photos.sh --preset vivid
 
-# Black and white conversion
+# Soft - dreamy, muted, low contrast
+./process_raw_photos.sh --preset soft
+
+# Black & White - professional monochrome
 ./process_raw_photos.sh --preset bw
 
-# Minimal processing
+# Vintage - warm, faded, nostalgic
+./process_raw_photos.sh --preset vintage
+
+# Natural - minimal processing, true to life
 ./process_raw_photos.sh --preset natural
 ```
 
-### Adjustment Examples
+---
+
+### Tone Adjustment Examples
 
 ```bash
-# Correct underexposed images
-./process_raw_photos.sh --shadows 30 --contrast 10
+# Increase contrast for flat images
+./process_raw_photos.sh --contrast 30
 
-# Fix overexposed images
+# Decrease contrast for softer look
+./process_raw_photos.sh --contrast -20
+
+# Maximum contrast for dramatic effect
+./process_raw_photos.sh --contrast 50
+
+# Recover blown highlights
 ./process_raw_photos.sh --highlights -40
 
-# Warm up cold indoor photos
-./process_raw_photos.sh --temperature 25
+# Boost highlights for airy look
+./process_raw_photos.sh --highlights 20
 
-# Add color pop
-./process_raw_photos.sh --vibrance 40 --saturation 110
+# Lift shadows to reveal detail
+./process_raw_photos.sh --shadows 35
 
-# High-ISO noise reduction (manual)
-./process_raw_photos.sh --noise-reduction 50 --sharpen 0.4
+# Deepen shadows for drama
+./process_raw_photos.sh --shadows -25
+
+# Add clarity/punch to midtones
+./process_raw_photos.sh --clarity 30
+
+# Soften for portraits (negative clarity)
+./process_raw_photos.sh --clarity -20
+
+# Combined: lift shadows and recover highlights (HDR-like)
+./process_raw_photos.sh --shadows 40 --highlights -30
+
+# Combined: high contrast with shadow detail
+./process_raw_photos.sh --contrast 25 --shadows 20
 ```
 
-### Output Examples
+---
+
+### White Balance Examples
 
 ```bash
-# Resize for web
-./process_raw_photos.sh --resize 1920 --quality 85
+# Warm up cold/blue photos
+./process_raw_photos.sh --temperature 30
 
-# Create print-ready files
-./process_raw_photos.sh --format tiff --quality 100
+# Cool down warm/orange photos
+./process_raw_photos.sh --temperature -25
 
-# Organize output
-./process_raw_photos.sh --output-dir ./processed --web-version
+# Very warm (golden hour simulation)
+./process_raw_photos.sh --temperature 50
 
-# Add photographer credit
-./process_raw_photos.sh --watermark "Photo by Jane Doe" --watermark-position bottomright
+# Very cool (blue hour simulation)
+./process_raw_photos.sh --temperature -40
+
+# Correct green color cast (add magenta)
+./process_raw_photos.sh --tint 15
+
+# Correct magenta color cast (add green)
+./process_raw_photos.sh --tint -15
+
+# Combined: warm with slight magenta (sunset look)
+./process_raw_photos.sh --temperature 35 --tint 10
+
+# Combined: cool with slight green (forest shade)
+./process_raw_photos.sh --temperature -20 --tint -10
 ```
 
-### Workflow Examples
+---
+
+### Color Adjustment Examples
 
 ```bash
-# Analyze before processing (v2.0 - shows scene detection, EXIF, etc.)
+# Boost saturation for vivid colors
+./process_raw_photos.sh --saturation 130
+
+# Reduce saturation for muted look
+./process_raw_photos.sh --saturation 80
+
+# Desaturate completely (another way to do B&W)
+./process_raw_photos.sh --saturation 0
+
+# Add vibrance (protects skin tones)
+./process_raw_photos.sh --vibrance 40
+
+# Maximum vibrance
+./process_raw_photos.sh --vibrance 100
+
+# Combined: moderate saturation with high vibrance
+./process_raw_photos.sh --saturation 110 --vibrance 50
+
+# Portrait-friendly: reduced saturation, added vibrance
+./process_raw_photos.sh --saturation 90 --vibrance 30
+```
+
+---
+
+### Noise Reduction Examples
+
+```bash
+# Light noise reduction (ISO 800-1600)
+./process_raw_photos.sh --noise-reduction 20
+
+# Medium noise reduction (ISO 1600-3200)
+./process_raw_photos.sh --noise-reduction 40
+
+# Heavy noise reduction (ISO 3200-6400)
+./process_raw_photos.sh --noise-reduction 60
+
+# Maximum noise reduction (ISO 6400+)
+./process_raw_photos.sh --noise-reduction 85
+
+# Noise reduction with reduced sharpening
+./process_raw_photos.sh --noise-reduction 50 --sharpen 0.3
+
+# Let adaptive noise reduction handle it (based on ISO)
+./process_raw_photos.sh  # automatic when ExifTool is available
+
+# Disable adaptive, use manual only
+./process_raw_photos.sh --no-adaptive-noise --noise-reduction 40
+```
+
+---
+
+### Sharpening Examples
+
+```bash
+# Subtle sharpening (portraits)
+./process_raw_photos.sh --sharpen 0.3
+
+# Standard sharpening (default)
+./process_raw_photos.sh --sharpen 0.5
+
+# Strong sharpening (landscapes, architecture)
+./process_raw_photos.sh --sharpen 0.7
+
+# Very strong sharpening (macro, product)
+./process_raw_photos.sh --sharpen 1.0
+
+# No sharpening
+./process_raw_photos.sh --sharpen 0
+
+# Let adaptive sharpening handle it (based on blur detection)
+./process_raw_photos.sh  # automatic
+
+# Disable adaptive sharpening
+./process_raw_photos.sh --no-blur-detection --sharpen 0.5
+```
+
+---
+
+### Resize Examples
+
+```bash
+# Resize to max 4000px (full resolution for prints)
+./process_raw_photos.sh --resize 4000
+
+# Resize to max 3000px (high quality web)
+./process_raw_photos.sh --resize 3000
+
+# Resize to max 2000px (standard web)
+./process_raw_photos.sh --resize 2000
+
+# Resize to max 1920px (full HD)
+./process_raw_photos.sh --resize 1920
+
+# Resize to max 1200px (blog/social media)
+./process_raw_photos.sh --resize 1200
+
+# Resize to max 800px (thumbnails)
+./process_raw_photos.sh --resize 800
+
+# Resize to 50% of original
+./process_raw_photos.sh --resize 50%
+
+# Resize to 25% of original
+./process_raw_photos.sh --resize 25%
+```
+
+---
+
+### Output Format Examples
+
+```bash
+# Output as JPEG (default)
+./process_raw_photos.sh --format jpg
+
+# Output as PNG (lossless, larger files)
+./process_raw_photos.sh --format png
+
+# Output as TIFF (print-ready, archival)
+./process_raw_photos.sh --format tiff
+
+# JPEG with maximum quality (default)
+./process_raw_photos.sh --quality 100
+
+# JPEG with high quality (slightly smaller)
+./process_raw_photos.sh --quality 95
+
+# JPEG with good quality (web-friendly)
+./process_raw_photos.sh --quality 85
+
+# JPEG with acceptable quality (small files)
+./process_raw_photos.sh --quality 70
+```
+
+---
+
+### Output Directory Examples
+
+```bash
+# Save to "processed" folder
+./process_raw_photos.sh --output-dir ./processed
+
+# Save to "edited" folder
+./process_raw_photos.sh --output-dir ./edited
+
+# Save to folder with date
+./process_raw_photos.sh --output-dir "./2025-01-15 Edited"
+
+# Save to folder with event name
+./process_raw_photos.sh --output-dir "./Wedding - Smith Family"
+
+# Save to absolute path
+./process_raw_photos.sh --output-dir /Users/photographer/Exports
+
+# Save to external drive
+./process_raw_photos.sh --output-dir "/Volumes/External HD/Photos"
+
+# Save to Dropbox
+./process_raw_photos.sh --output-dir ~/Dropbox/Photos/Edited
+
+# Save to Google Drive
+./process_raw_photos.sh --output-dir "/Users/name/Google Drive/Photos"
+```
+
+---
+
+### Watermark Examples
+
+```bash
+# Simple text watermark
+./process_raw_photos.sh --watermark "Photo by John"
+
+# Copyright watermark
+./process_raw_photos.sh --watermark "© 2025 Studio Name"
+
+# Website watermark
+./process_raw_photos.sh --watermark "www.photographer.com"
+
+# Watermark bottom-right (default)
+./process_raw_photos.sh --watermark "Studio X" --watermark-position bottomright
+
+# Watermark bottom-left
+./process_raw_photos.sh --watermark "Studio X" --watermark-position bottomleft
+
+# Watermark top-right
+./process_raw_photos.sh --watermark "Studio X" --watermark-position topright
+
+# Watermark top-left
+./process_raw_photos.sh --watermark "Studio X" --watermark-position topleft
+
+# Watermark center
+./process_raw_photos.sh --watermark "PROOF" --watermark-position center
+
+# Subtle watermark (low opacity)
+./process_raw_photos.sh --watermark "Studio X" --watermark-opacity 30
+
+# Bold watermark (high opacity)
+./process_raw_photos.sh --watermark "SAMPLE" --watermark-opacity 70
+
+# Full watermark with all options
+./process_raw_photos.sh --watermark "© 2025 My Studio" --watermark-position bottomright --watermark-opacity 40
+```
+
+---
+
+### Web Version Examples
+
+```bash
+# Create web versions with defaults (1200px, 85% quality)
+./process_raw_photos.sh --web-version
+
+# Web version at 1920px (full HD)
+./process_raw_photos.sh --web-version --web-size 1920
+
+# Web version at 800px (thumbnails/social)
+./process_raw_photos.sh --web-version --web-size 800
+
+# Web version at lower quality (faster loading)
+./process_raw_photos.sh --web-version --web-quality 75
+
+# Web version at higher quality
+./process_raw_photos.sh --web-version --web-quality 90
+
+# Full resolution + web version
+./process_raw_photos.sh --web-version --resize 4000 --web-size 1200
+```
+
+---
+
+### Analysis & Preview Examples
+
+```bash
+# Analyze all images (no processing)
 ./process_raw_photos.sh --analyze
 
-# Test settings on one image
-./process_raw_photos.sh --preview IMG_0001.CR2 --preset portrait --vibrance 30
+# Preview single image with default settings
+./process_raw_photos.sh --preview IMG_0001.CR2
 
-# Full production workflow
+# Preview with specific preset
+./process_raw_photos.sh --preview IMG_0001.CR2 --preset portrait
+
+# Preview with adjustments
+./process_raw_photos.sh --preview IMG_0001.CR2 --contrast 20 --vibrance 30
+
+# Preview with full settings
+./process_raw_photos.sh --preview IMG_0001.CR2 --preset vivid --shadows 20 --highlights -10 --resize 2000
+
+# Preview Nikon file
+./process_raw_photos.sh --preview DSC_0001.NEF --preset landscape
+
+# Preview Sony file
+./process_raw_photos.sh --preview DSC00001.ARW --preset natural
+```
+
+---
+
+### Intelligent Features Control (v2.0)
+
+```bash
+# Full intelligent processing (default)
+./process_raw_photos.sh
+
+# Disable face detection
+./process_raw_photos.sh --no-face-detection
+
+# Disable scene detection
+./process_raw_photos.sh --no-scene-detection
+
+# Disable adaptive noise reduction
+./process_raw_photos.sh --no-adaptive-noise
+
+# Disable blur detection
+./process_raw_photos.sh --no-blur-detection
+
+# Disable all intelligent features
+./process_raw_photos.sh --no-face-detection --no-scene-detection --no-adaptive-noise --no-blur-detection
+
+# Disable intelligent per-image analysis
+./process_raw_photos.sh --no-analysis
+
+# Preserve metadata (default when ExifTool available)
+./process_raw_photos.sh --preserve-metadata
+
+# Don't preserve metadata
+./process_raw_photos.sh --no-preserve-metadata
+```
+
+---
+
+### Portrait Photography Examples
+
+```bash
+# Basic portrait processing
+./process_raw_photos.sh --preset portrait
+
+# Portrait with skin smoothing
+./process_raw_photos.sh --preset portrait --clarity -15
+
+# Portrait with eye pop
+./process_raw_photos.sh --preset portrait --clarity -10 --sharpen 0.4
+
+# Portrait with warm skin tones
+./process_raw_photos.sh --preset portrait --temperature 15
+
+# High-key portrait
+./process_raw_photos.sh --preset portrait --shadows 30 --highlights 10
+
+# Low-key portrait
+./process_raw_photos.sh --preset portrait --shadows -10 --contrast 15
+
+# Portrait for print
+./process_raw_photos.sh --preset portrait --format tiff --resize 4000
+
+# Portrait for Instagram
+./process_raw_photos.sh --preset portrait --resize 1080 --quality 90
+
+# Headshot with watermark
+./process_raw_photos.sh --preset portrait --watermark "© Photographer Name"
+
+# Batch portrait session
+./process_raw_photos.sh --preset portrait --parallel 0 --web-version --output-dir "./Portraits - Edited"
+
+# Family portrait session
+./process_raw_photos.sh \
+  --preset portrait \
+  --vibrance 20 \
+  --clarity -10 \
+  --resize 4000 \
+  --web-version \
+  --web-size 1200 \
+  --output-dir "./Family Session"
+
+# Corporate headshots
+./process_raw_photos.sh \
+  --preset portrait \
+  --contrast 5 \
+  --clarity -5 \
+  --saturation 95 \
+  --resize 3000 \
+  --output-dir "./Corporate Headshots"
+```
+
+---
+
+### Wedding Photography Examples
+
+```bash
+# Wedding - getting ready shots
+./process_raw_photos.sh --preset portrait --shadows 15 --temperature 10
+
+# Wedding - ceremony (mixed lighting)
+./process_raw_photos.sh --preset auto --parallel 0
+
+# Wedding - reception (low light)
+./process_raw_photos.sh --preset portrait --shadows 25 --noise-reduction 40
+
+# Wedding - outdoor portraits
+./process_raw_photos.sh --preset portrait --highlights -20 --vibrance 25
+
+# Wedding - dance floor
+./process_raw_photos.sh --preset auto --noise-reduction 50 --sharpen 0.4
+
+# Wedding - full workflow
+./process_raw_photos.sh \
+  --preset portrait \
+  --auto-format \
+  --parallel 0 \
+  --resize 4000 \
+  --web-version \
+  --web-size 1500 \
+  --preserve-metadata \
+  --output-dir "./Wedding - Smith & Johnson"
+
+# Wedding - client preview (watermarked)
+./process_raw_photos.sh \
+  --preset portrait \
+  --resize 1500 \
+  --watermark "PROOF - Studio Name" \
+  --watermark-position center \
+  --watermark-opacity 30 \
+  --output-dir "./Wedding - Proofs"
+
+# Wedding - print delivery
+./process_raw_photos.sh \
+  --preset portrait \
+  --format tiff \
+  --resize 6000 \
+  --output-dir "./Wedding - Print Files"
+
+# Wedding - social media teaser
+./process_raw_photos.sh \
+  --preset portrait \
+  --vibrance 30 \
+  --resize 1080 \
+  --watermark "© Studio Name" \
+  --output-dir "./Wedding - Social"
+```
+
+---
+
+### Landscape Photography Examples
+
+```bash
+# Basic landscape
+./process_raw_photos.sh --preset vivid
+
+# Landscape with extra punch
+./process_raw_photos.sh --preset vivid --clarity 35 --vibrance 50
+
+# Sunrise/sunset landscapes
+./process_raw_photos.sh --preset vivid --temperature 20 --saturation 120
+
+# Blue hour landscapes
+./process_raw_photos.sh --preset vivid --temperature -15 --saturation 115
+
+# Moody landscape
+./process_raw_photos.sh --preset vivid --contrast 25 --saturation 90 --shadows -10
+
+# Misty/foggy landscape
+./process_raw_photos.sh --preset soft --contrast -10 --saturation 85
+
+# Mountain landscape
+./process_raw_photos.sh --preset vivid --clarity 40 --highlights -25 --shadows 30
+
+# Beach landscape
+./process_raw_photos.sh --preset vivid --highlights -20 --temperature 10
+
+# Forest landscape
+./process_raw_photos.sh --preset vivid --shadows 25 --vibrance 40 --temperature -10
+
+# Desert landscape
+./process_raw_photos.sh --preset vivid --temperature 25 --contrast 20 --clarity 30
+
+# Landscape for print
+./process_raw_photos.sh \
+  --preset vivid \
+  --clarity 30 \
+  --format tiff \
+  --resize 8000 \
+  --output-dir "./Landscapes - Print"
+
+# Landscape for web gallery
+./process_raw_photos.sh \
+  --preset vivid \
+  --resize 2500 \
+  --web-version \
+  --watermark "© Nature Photos" \
+  --output-dir "./Landscapes - Web"
+```
+
+---
+
+### Event Photography Examples
+
+```bash
+# Corporate event
+./process_raw_photos.sh \
+  --preset auto \
+  --parallel 0 \
+  --resize 3000 \
+  --output-dir "./Corporate Event"
+
+# Conference/seminar
+./process_raw_photos.sh \
+  --preset natural \
+  --shadows 20 \
+  --noise-reduction 30 \
+  --parallel 0 \
+  --output-dir "./Conference 2025"
+
+# Birthday party
+./process_raw_photos.sh \
+  --preset portrait \
+  --vibrance 30 \
+  --parallel 0 \
+  --web-version \
+  --output-dir "./Birthday Party"
+
+# Graduation ceremony
+./process_raw_photos.sh \
+  --preset portrait \
+  --resize 4000 \
+  --web-version \
+  --watermark "Graduation 2025" \
+  --output-dir "./Graduation"
+
+# Sports event
+./process_raw_photos.sh \
+  --preset vivid \
+  --contrast 15 \
+  --sharpen 0.7 \
+  --parallel 0 \
+  --output-dir "./Sports Event"
+
+# Concert/live music
+./process_raw_photos.sh \
+  --preset vivid \
+  --shadows 30 \
+  --noise-reduction 50 \
+  --saturation 120 \
+  --output-dir "./Concert Photos"
+
+# Quinceañera / Sweet 16
 ./process_raw_photos.sh \
   --preset portrait \
   --vibrance 25 \
-  --resize 3000 \
-  --output-dir ./final \
-  --watermark "Studio Name" \
-  --web-version \
-  --web-size 1200 \
-  --parallel 4
-
-# Quiet mode for scripts
-./process_raw_photos.sh --quiet --output-dir ./batch_output
-```
-
-### Combined Examples
-
-```bash
-# Event photography workflow (fast parallel processing)
-./process_raw_photos.sh \
-  --preset portrait \
+  --temperature 10 \
   --parallel 0 \
   --resize 4000 \
-  --output-dir "./Event Name - Edited" \
   --web-version \
-  --watermark "Event Photos 2025"
+  --output-dir "./Quinceañera - Maria"
 
-# Product photography
+# School event
+./process_raw_photos.sh \
+  --preset auto \
+  --parallel 0 \
+  --resize 3000 \
+  --web-version \
+  --web-size 1000 \
+  --output-dir "./School Event"
+```
+
+---
+
+### Product Photography Examples
+
+```bash
+# Basic product shot
+./process_raw_photos.sh --preset vivid --clarity 25
+
+# White background product
+./process_raw_photos.sh --preset vivid --highlights 10 --contrast 15
+
+# Jewelry photography
+./process_raw_photos.sh \
+  --preset vivid \
+  --clarity 35 \
+  --sharpen 0.8 \
+  --saturation 110 \
+  --format png
+
+# Food photography
+./process_raw_photos.sh \
+  --preset vivid \
+  --temperature 15 \
+  --saturation 115 \
+  --vibrance 40 \
+  --clarity 20
+
+# Clothing/fashion product
+./process_raw_photos.sh \
+  --preset natural \
+  --contrast 10 \
+  --clarity 15 \
+  --format png \
+  --resize 2500
+
+# Electronics product
+./process_raw_photos.sh \
+  --preset vivid \
+  --contrast 20 \
+  --clarity 30 \
+  --sharpen 0.7 \
+  --format png
+
+# E-commerce batch processing
 ./process_raw_photos.sh \
   --preset vivid \
   --contrast 15 \
   --clarity 25 \
-  --saturation 115 \
   --format png \
-  --resize 2000
+  --resize 2000 \
+  --parallel 0 \
+  --output-dir "./Products - Web Ready"
 
-# Fine art black & white
+# Amazon/eBay listing photos
+./process_raw_photos.sh \
+  --preset vivid \
+  --highlights 5 \
+  --contrast 15 \
+  --resize 1500 \
+  --quality 95 \
+  --output-dir "./Listings"
+```
+
+---
+
+### Real Estate Photography Examples
+
+```bash
+# Interior shots
+./process_raw_photos.sh \
+  --preset natural \
+  --shadows 30 \
+  --highlights -20 \
+  --temperature 5
+
+# Exterior shots
+./process_raw_photos.sh \
+  --preset vivid \
+  --clarity 20 \
+  --vibrance 25
+
+# HDR-style processing
+./process_raw_photos.sh \
+  --shadows 40 \
+  --highlights -35 \
+  --clarity 25 \
+  --saturation 110
+
+# Full real estate workflow
+./process_raw_photos.sh \
+  --preset natural \
+  --shadows 35 \
+  --highlights -25 \
+  --vibrance 20 \
+  --resize 3000 \
+  --web-version \
+  --web-size 1200 \
+  --parallel 0 \
+  --output-dir "./Property - 123 Main St"
+
+# MLS-ready photos
+./process_raw_photos.sh \
+  --preset natural \
+  --shadows 30 \
+  --highlights -20 \
+  --resize 2048 \
+  --quality 90 \
+  --output-dir "./MLS Photos"
+```
+
+---
+
+### Black & White Examples
+
+```bash
+# Standard B&W conversion
+./process_raw_photos.sh --preset bw
+
+# High contrast B&W
+./process_raw_photos.sh --preset bw --contrast 30
+
+# Low contrast B&W (vintage feel)
+./process_raw_photos.sh --preset bw --contrast -10
+
+# Film noir style
+./process_raw_photos.sh --preset bw --contrast 40 --shadows -20
+
+# High-key B&W
+./process_raw_photos.sh --preset bw --shadows 30 --highlights 15
+
+# Low-key B&W
+./process_raw_photos.sh --preset bw --shadows -15 --contrast 25
+
+# B&W portrait
+./process_raw_photos.sh --preset bw --clarity -10 --contrast 15
+
+# B&W landscape
+./process_raw_photos.sh --preset bw --clarity 30 --contrast 25
+
+# B&W street photography
+./process_raw_photos.sh --preset bw --contrast 20 --clarity 20 --sharpen 0.6
+
+# Fine art B&W print
 ./process_raw_photos.sh \
   --preset bw \
   --contrast 20 \
-  --clarity 30 \
-  --format tiff
+  --clarity 25 \
+  --format tiff \
+  --resize 6000 \
+  --output-dir "./BW Fine Art"
+```
 
-# Process mixed camera files from a wedding
+---
+
+### Vintage/Retro Style Examples
+
+```bash
+# Standard vintage look
+./process_raw_photos.sh --preset vintage
+
+# Faded film look
+./process_raw_photos.sh --preset vintage --highlights 20 --saturation 80
+
+# 70s warm vintage
+./process_raw_photos.sh --preset vintage --temperature 35 --saturation 85
+
+# Cross-processed look
+./process_raw_photos.sh --temperature 20 --tint 15 --contrast 15 --saturation 110
+
+# Polaroid-style
+./process_raw_photos.sh --preset vintage --contrast -15 --highlights 25 --saturation 85
+
+# Kodachrome-inspired
+./process_raw_photos.sh --preset vivid --temperature 15 --saturation 120 --contrast 20
+
+# Portra-style (portrait film)
+./process_raw_photos.sh --preset portrait --temperature 10 --saturation 95 --contrast -5
+
+# Cinematic vintage
 ./process_raw_photos.sh \
-  --auto-format \
+  --preset vintage \
+  --temperature 20 \
+  --contrast 10 \
+  --highlights 15 \
+  --saturation 85
+```
+
+---
+
+### Night Photography Examples
+
+```bash
+# Night cityscape
+./process_raw_photos.sh \
+  --shadows 30 \
+  --highlights -25 \
+  --noise-reduction 40 \
+  --vibrance 30
+
+# Night portrait
+./process_raw_photos.sh \
   --preset portrait \
-  --parallel 4 \
+  --shadows 25 \
+  --noise-reduction 50 \
+  --sharpen 0.4
+
+# Astrophotography / stars
+./process_raw_photos.sh \
+  --shadows 40 \
+  --contrast 20 \
+  --noise-reduction 30 \
+  --saturation 110
+
+# Light trails
+./process_raw_photos.sh \
+  --preset vivid \
+  --contrast 20 \
+  --saturation 120 \
+  --clarity 25
+
+# Neon/urban night
+./process_raw_photos.sh \
+  --preset vivid \
+  --saturation 130 \
+  --vibrance 50 \
+  --contrast 25
+
+# Blue hour
+./process_raw_photos.sh \
+  --preset vivid \
+  --temperature -20 \
+  --saturation 115 \
+  --shadows 25
+```
+
+---
+
+### Macro Photography Examples
+
+```bash
+# Basic macro
+./process_raw_photos.sh --clarity 30 --sharpen 0.8
+
+# Flower macro
+./process_raw_photos.sh \
+  --preset vivid \
+  --clarity 25 \
+  --sharpen 0.8 \
+  --vibrance 40
+
+# Insect macro
+./process_raw_photos.sh \
+  --clarity 35 \
+  --sharpen 0.9 \
+  --contrast 15 \
+  --vibrance 30
+
+# Product macro (jewelry, watches)
+./process_raw_photos.sh \
+  --preset vivid \
+  --clarity 30 \
+  --sharpen 0.8 \
+  --contrast 20 \
+  --format png
+
+# Water droplet macro
+./process_raw_photos.sh \
+  --clarity 35 \
+  --sharpen 0.9 \
+  --highlights -15 \
+  --vibrance 35
+```
+
+---
+
+### Studio Photography Examples
+
+```bash
+# Beauty/fashion shoot
+./process_raw_photos.sh \
+  --preset portrait \
+  --clarity -15 \
+  --vibrance 20 \
+  --highlights -10
+
+# Model portfolio
+./process_raw_photos.sh \
+  --preset portrait \
+  --contrast 10 \
+  --clarity -10 \
+  --resize 4000 \
+  --output-dir "./Portfolio"
+
+# Catalog/lookbook
+./process_raw_photos.sh \
+  --preset natural \
+  --contrast 10 \
+  --clarity 10 \
+  --format png \
+  --resize 3000
+
+# High fashion editorial
+./process_raw_photos.sh \
+  --preset vivid \
+  --contrast 20 \
+  --clarity 15 \
+  --saturation 105
+
+# Fitness photography
+./process_raw_photos.sh \
+  --preset vivid \
+  --contrast 25 \
+  --clarity 30 \
+  --sharpen 0.7
+```
+
+---
+
+### Social Media Optimization Examples
+
+```bash
+# Instagram feed (square crop would need additional tool)
+./process_raw_photos.sh --preset vivid --resize 1080 --quality 90
+
+# Instagram Stories
+./process_raw_photos.sh --preset vivid --resize 1920 --quality 85
+
+# Facebook
+./process_raw_photos.sh --preset auto --resize 2048 --quality 85
+
+# Twitter/X
+./process_raw_photos.sh --preset vivid --resize 1500 --quality 85
+
+# LinkedIn
+./process_raw_photos.sh --preset natural --resize 1920 --quality 90
+
+# Pinterest
+./process_raw_photos.sh --preset vivid --vibrance 40 --resize 1500
+
+# Social media batch
+./process_raw_photos.sh \
+  --preset vivid \
+  --vibrance 30 \
+  --resize 2048 \
+  --quality 85 \
+  --parallel 0 \
+  --output-dir "./Social Media Ready"
+```
+
+---
+
+### Print Preparation Examples
+
+```bash
+# Standard print (8x10, 11x14)
+./process_raw_photos.sh \
+  --format tiff \
+  --resize 4000 \
+  --output-dir "./Print Ready"
+
+# Large print (16x20, 20x24)
+./process_raw_photos.sh \
+  --format tiff \
+  --resize 6000 \
+  --output-dir "./Large Prints"
+
+# Canvas/wall art
+./process_raw_photos.sh \
+  --preset vivid \
+  --format tiff \
+  --resize 8000 \
+  --output-dir "./Canvas Prints"
+
+# Photo book
+./process_raw_photos.sh \
+  --format jpg \
+  --quality 100 \
+  --resize 4000 \
+  --output-dir "./Photo Book"
+
+# Fine art giclée print
+./process_raw_photos.sh \
+  --format tiff \
+  --resize 10000 \
+  --output-dir "./Fine Art Prints"
+
+# Album prints
+./process_raw_photos.sh \
+  --preset portrait \
+  --format tiff \
+  --resize 5000 \
+  --output-dir "./Album"
+```
+
+---
+
+### Automation & Scripting Examples
+
+```bash
+# Quiet mode for cron jobs
+./process_raw_photos.sh --quiet --output-dir ./auto_processed
+
+# Background processing
+nohup ./process_raw_photos.sh --parallel 0 --output-dir ./batch &
+
+# Process and notify (macOS)
+./process_raw_photos.sh --parallel 0 && osascript -e 'display notification "Processing complete" with title "RAW Processor"'
+
+# Process multiple directories
+for dir in ./shoot1 ./shoot2 ./shoot3; do
+  ./process_raw_photos.sh --parallel 0 --output-dir "${dir}_edited" "$dir"
+done
+
+# Process with date-based output folder
+./process_raw_photos.sh --output-dir "./processed_$(date +%Y%m%d)"
+
+# Weekly backup processing
+./process_raw_photos.sh \
+  --quiet \
+  --parallel 0 \
+  --output-dir "/backup/photos/$(date +%Y)/week_$(date +%V)" \
+  /path/to/new/photos
+```
+
+---
+
+### Professional Workflow Examples
+
+```bash
+# Client delivery workflow
+./process_raw_photos.sh \
+  --preset portrait \
+  --parallel 0 \
+  --resize 4000 \
   --web-version \
-  --preserve-metadata
+  --web-size 1500 \
+  --preserve-metadata \
+  --output-dir "./Client Delivery"
+
+# Stock photography submission
+./process_raw_photos.sh \
+  --preset natural \
+  --preserve-metadata \
+  --format jpg \
+  --quality 100 \
+  --resize 6000 \
+  --output-dir "./Stock Submissions"
+
+# Magazine submission
+./process_raw_photos.sh \
+  --preset natural \
+  --format tiff \
+  --resize 5000 \
+  --output-dir "./Magazine Submission"
+
+# Photojournalism
+./process_raw_photos.sh \
+  --preset natural \
+  --preserve-metadata \
+  --resize 4000 \
+  --output-dir "./News Photos"
+
+# Archive with full quality
+./process_raw_photos.sh \
+  --preset natural \
+  --format tiff \
+  --preserve-metadata \
+  --output-dir "./Archive"
+```
+
+---
+
+### Complete Project Workflows
+
+```bash
+# Complete wedding workflow
+./process_raw_photos.sh \
+  --preset portrait \
+  --auto-format \
+  --parallel 0 \
+  --shadows 15 \
+  --highlights -15 \
+  --vibrance 20 \
+  --resize 5000 \
+  --web-version \
+  --web-size 1500 \
+  --preserve-metadata \
+  --watermark "© Studio Name 2025" \
+  --watermark-position bottomright \
+  --watermark-opacity 40 \
+  --output-dir "./Wedding - Complete Delivery"
+
+# Complete portrait session workflow
+./process_raw_photos.sh \
+  --preset portrait \
+  --parallel 0 \
+  --clarity -10 \
+  --vibrance 25 \
+  --resize 4000 \
+  --web-version \
+  --web-size 1200 \
+  --preserve-metadata \
+  --output-dir "./Portrait Session - Final"
+
+# Complete landscape project
+./process_raw_photos.sh \
+  --preset vivid \
+  --parallel 0 \
+  --clarity 30 \
+  --vibrance 40 \
+  --shadows 20 \
+  --highlights -20 \
+  --format tiff \
+  --resize 8000 \
+  --web-version \
+  --web-size 2000 \
+  --watermark "© Landscape Photographer" \
+  --output-dir "./Landscape Collection"
+
+# Complete event coverage
+./process_raw_photos.sh \
+  --preset auto \
+  --auto-format \
+  --parallel 0 \
+  --resize 4000 \
+  --web-version \
+  --web-size 1200 \
+  --preserve-metadata \
+  --output-dir "./Event - Full Coverage"
+
+# Complete product catalog
+./process_raw_photos.sh \
+  --preset vivid \
+  --parallel 0 \
+  --contrast 15 \
+  --clarity 25 \
+  --format png \
+  --resize 2500 \
+  --output-dir "./Product Catalog"
 ```
 
 ---
