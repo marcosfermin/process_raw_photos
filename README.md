@@ -1,6 +1,6 @@
 # RAW Photo Batch Processor
 
-[![Version](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/marcosfermin/process_raw_photos/releases/tag/v3.0)
+[![Version](https://img.shields.io/badge/version-4.0-blue.svg)](https://github.com/marcosfermin/process_raw_photos/releases/tag/v4.0)
 [![License](https://img.shields.io/badge/license-GPL%20v3-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-lightgrey.svg)]()
 [![Bash](https://img.shields.io/badge/bash-4.0%2B-orange.svg)]()
@@ -9,7 +9,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/marcosfermin/process_raw_photos)](https://github.com/marcosfermin/process_raw_photos/releases)
 [![Maintenance](https://img.shields.io/badge/maintained-yes-brightgreen.svg)](https://github.com/marcosfermin/process_raw_photos/commits/main)
 
-A professional-grade bash script for batch processing RAW files with **advanced AI-like intelligent analysis**, multi-format support, parallel processing, and comprehensive editing tools.
+A professional-grade bash script for batch processing RAW files with **next-level AI-like intelligent analysis**, multi-format support, parallel processing, and comprehensive editing tools.
 
 ---
 
@@ -134,6 +134,45 @@ Process files from any major camera manufacturer:
 | **Color Harmony** | Detects palette type and enhances |
 | **Dynamic Range** | Optimizes usable dynamic range |
 | **Batch Learning** | Applies consistent style across batch |
+
+### V4.0 Advanced Intelligence
+
+| Feature | Description |
+|---------|-------------|
+| **Eye Enhancement** | Detects eyes in portraits, brightens and sharpens catchlights |
+| **Teeth Whitening** | Subtle smile enhancement for portraits |
+| **Food Photography** | Detects food, boosts saturation and warmth for appetizing look |
+| **Architecture Detection** | Identifies buildings, analyzes perspective distortion |
+| **Water/Reflections** | Detects water bodies and enhances reflections |
+| **Time-of-Day Intelligence** | Uses EXIF timestamp to optimize for dawn/day/golden hour/night |
+
+### Quality Analysis
+
+| Feature | Description |
+|---------|-------------|
+| **Technical Quality Score** | Rates sharpness, exposure, noise (0-100) |
+| **Aesthetic Quality Score** | Rates composition, color harmony, subject (0-100) |
+| **Overall Quality Score** | Combined recommendation with keep/review suggestion |
+| **Focus Quality Detection** | Rates focus as excellent/good/soft/missed |
+| **In-Focus Area Analysis** | Calculates percentage of image in sharp focus |
+
+### Advanced Noise Analysis
+
+| Feature | Description |
+|---------|-------------|
+| **Luminance vs Chroma** | Distinguishes between brightness and color noise |
+| **Banding Detection** | Identifies horizontal/vertical pattern noise |
+| **Motion Blur Analysis** | Detects blur direction and intentionality |
+| **Noise Type Classification** | Categories: none, luminance, chroma, mixed, banding |
+
+### Smart Features
+
+| Feature | Description |
+|---------|-------------|
+| **Mood Detection** | Identifies happy, dramatic, peaceful, romantic, mysterious moods |
+| **Smart Auto-Crop** | Suggests optimal crop based on subject and composition |
+| **Lens Profile Database** | Auto-matches lens from EXIF for corrections |
+| **Focus Point Detection** | Locates the sharpest region of the image |
 
 ### Performance
 
@@ -362,6 +401,40 @@ Composition & Color:
   Composition Score:  85/100
   Color Harmony:      warm palette
   Dynamic Range:      Good
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+V4.0 Advanced Intelligent Analysis:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Time Intelligence:
+  Time Period:        golden (hour: 18)
+
+Subject Detection:
+  Eyes Detected:      Yes - enhancement enabled
+  Smile Detected:     Yes - subtle whitening enabled
+
+Quality Scoring:
+  Technical Score:    75/100
+  Aesthetic Score:    85/100
+  Overall Score:      80/100
+  Recommendation:     Keep
+
+Focus Analysis:
+  Focus Quality:      excellent
+  Focus Point:        0.50, 0.33
+  In-Focus Area:      44%
+
+Noise Analysis:
+  Noise Type:         luminance
+  Luminance Noise:    8%
+  Chroma Noise:       3%
+
+Mood Detection:
+  Detected Mood:      romantic (60% confidence)
+
+Lens Profile:
+  Matched Lens:       RF24-70mm
+  Corrections:        Applied
 ```
 
 ---

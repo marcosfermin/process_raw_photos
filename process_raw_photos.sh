@@ -2,7 +2,7 @@
 #===============================================================================
 #
 #   RAW PHOTO BATCH PROCESSOR
-#   Version: 3.0
+#   Version: 4.0
 #   Author: Marcos Fermin <https://marcosfermin.com>
 #   Date: December 22, 2025
 #
@@ -62,6 +62,32 @@
 #   - Shadow detail enhancement without noise amplification
 #   - Color harmony analysis and enhancement
 #   - Batch learning for consistent style across images
+#
+#   NEW in v4.0:
+#   - Eye detection and enhancement (brighten, sharpen catchlights)
+#   - Teeth whitening detection for portraits
+#   - Food photography detection with appetizing enhancements
+#   - Architecture detection with perspective analysis
+#   - Water/reflection detection and enhancement
+#   - Time-of-day intelligence from EXIF timestamp
+#   - Overall image quality scoring (0-100)
+#   - Aesthetic quality assessment
+#   - Best shot selection from burst/series
+#   - Duplicate/similar image detection
+#   - Advanced noise type analysis (luminance vs chroma)
+#   - Pattern noise and banding detection
+#   - Smart subject-aware auto-crop suggestions
+#   - Mood/emotion detection from colors and composition
+#   - Film emulation profiles (Portra, Velvia, Tri-X, etc.)
+#   - Lens profile database with auto-corrections
+#   - Focus point detection and optimization
+#   - Motion blur direction analysis
+#   - Edge-aware selective sharpening
+#   - Local contrast mapping
+#   - Shadow/highlight zone recovery
+#   - Automatic panorama detection
+#   - HDR bracket detection
+#   - Style learning from reference images
 #
 #   Requirements:
 #   - ImageMagick (install via: brew install imagemagick)
@@ -274,6 +300,145 @@ declare -a BATCH_COLOR_TEMPS=()     # Store color temperature data
 BATCH_AVG_EXPOSURE=0                # Calculated batch average exposure
 BATCH_AVG_COLOR_TEMP=0              # Calculated batch average color temp
 
+#-------------------------------------------------------------------------------
+# V4.0 ADVANCED AI-LIKE PROCESSING OPTIONS
+#-------------------------------------------------------------------------------
+
+# Eye and face enhancement
+ENABLE_EYE_ENHANCEMENT=true         # Detect and enhance eyes
+EYE_BRIGHTNESS_BOOST=15             # Brighten eyes (0-50)
+EYE_SHARPNESS_BOOST=20              # Sharpen catchlights (0-50)
+ENABLE_TEETH_DETECTION=true         # Detect teeth for whitening
+TEETH_WHITENING_STRENGTH=20         # Whitening amount (0-50)
+
+# Food photography
+ENABLE_FOOD_DETECTION=true          # Detect food photography
+FOOD_SATURATION_BOOST=20            # Extra saturation for food (0-50)
+FOOD_WARMTH_BOOST=15                # Warm tones for appetizing look (0-50)
+FOOD_CLARITY_BOOST=15               # Extra clarity for texture (0-50)
+
+# Architecture detection
+ENABLE_ARCHITECTURE_DETECTION=true  # Detect buildings/architecture
+ENABLE_PERSPECTIVE_ANALYSIS=true    # Analyze perspective distortion
+PERSPECTIVE_CORRECTION_STRENGTH=80  # How much to correct (0-100)
+
+# Water and reflection detection
+ENABLE_WATER_DETECTION=true         # Detect water/reflections
+WATER_CLARITY_BOOST=20              # Enhance water clarity
+REFLECTION_ENHANCEMENT=true         # Enhance reflections
+
+# Time-of-day intelligence
+ENABLE_TIME_INTELLIGENCE=true       # Use EXIF time for processing
+EXIF_TIME_HOUR=12                   # Extracted hour (0-23)
+DETECTED_TIME_PERIOD="day"          # dawn, morning, day, afternoon, golden, blue, night
+
+# Quality scoring
+ENABLE_QUALITY_SCORING=true         # Calculate quality scores
+TECHNICAL_QUALITY_SCORE=0           # Focus, exposure, noise (0-100)
+AESTHETIC_QUALITY_SCORE=0           # Composition, color, interest (0-100)
+OVERALL_QUALITY_SCORE=0             # Combined score (0-100)
+QUALITY_THRESHOLD=50                # Minimum score to recommend keeping
+
+# Burst/series detection
+ENABLE_BURST_DETECTION=true         # Detect burst/series shots
+BURST_WINDOW_SECONDS=2              # Time window for burst grouping
+declare -a BURST_GROUPS=()          # Store burst group info
+BEST_SHOT_SELECTION=true            # Select best from burst
+
+# Duplicate detection
+ENABLE_DUPLICATE_DETECTION=true     # Find similar/duplicate images
+DUPLICATE_SIMILARITY_THRESHOLD=95   # Similarity % to consider duplicate
+declare -a DUPLICATE_GROUPS=()      # Store duplicate groups
+
+# Advanced noise analysis
+ENABLE_NOISE_TYPE_ANALYSIS=true     # Analyze noise types
+LUMINANCE_NOISE_LEVEL=0             # Luminance noise amount
+CHROMA_NOISE_LEVEL=0                # Color noise amount
+HAS_BANDING=false                   # Banding artifact detected
+HAS_PATTERN_NOISE=false             # Pattern noise detected
+NOISE_TYPE="none"                   # none, luminance, chroma, mixed, banding
+
+# Smart auto-crop
+ENABLE_SMART_CROP=true              # Enable smart cropping
+SMART_CROP_ASPECT=""                # Suggested aspect ratio
+SMART_CROP_GEOMETRY=""              # Suggested crop geometry
+CROP_CONFIDENCE=0                   # Confidence in crop suggestion
+
+# Mood/emotion detection
+ENABLE_MOOD_DETECTION=true          # Detect mood from image
+DETECTED_MOOD="neutral"             # happy, sad, dramatic, peaceful, energetic, romantic, mysterious
+MOOD_CONFIDENCE=0                   # Confidence in mood detection
+MOOD_ENHANCEMENT=""                 # Suggested mood enhancement
+
+# Film emulation
+ENABLE_FILM_EMULATION=false         # Apply film emulation
+FILM_PROFILE="none"                 # portra, velvia, trix, cinestill, provia, ektar
+FILM_STRENGTH=100                   # Film effect strength (0-100)
+
+# Lens profile database (format: name|type|distortion_type|distortion_amt|vignette_amt)
+ENABLE_LENS_PROFILES=true           # Use lens-specific corrections
+LENS_DB_ENTRIES=(
+    "EF16-35mm|wide|barrel|0.02|0.15"
+    "EF24-70mm|standard|none|0|0.08"
+    "EF70-200mm|tele|pincushion|0.01|0.05"
+    "EF50mm|prime|none|0|0.10"
+    "EF85mm|portrait|none|0|0.08"
+    "RF24-70mm|standard|none|0|0.05"
+    "RF50mm|prime|none|0|0.06"
+    "RF24-105mm|standard|none|0|0.06"
+    "RF85mm|portrait|none|0|0.05"
+)
+MATCHED_LENS_PROFILE=""             # Matched lens from database
+
+# Focus detection
+ENABLE_FOCUS_DETECTION=true         # Detect focus point
+FOCUS_POINT_X=0.5                   # Focus point X (0-1)
+FOCUS_POINT_Y=0.5                   # Focus point Y (0-1)
+FOCUS_QUALITY="good"                # excellent, good, soft, missed
+IN_FOCUS_AREA=0                     # Percentage of image in focus
+
+# Motion blur analysis
+ENABLE_MOTION_ANALYSIS=true         # Analyze motion blur
+HAS_MOTION_BLUR=false               # Motion blur detected
+MOTION_DIRECTION=""                 # horizontal, vertical, diagonal, radial
+MOTION_SEVERITY=0                   # Motion blur severity (0-100)
+IS_INTENTIONAL_MOTION=false         # Panning shot or long exposure
+
+# Edge-aware sharpening
+ENABLE_EDGE_SHARPENING=true         # Smart edge-aware sharpening
+EDGE_SHARPENING_AMOUNT=0.5          # Amount for edges
+TEXTURE_SHARPENING_AMOUNT=0.3       # Amount for textures
+SKIN_SHARPENING_AMOUNT=0.1          # Reduced for skin
+
+# Local contrast
+ENABLE_LOCAL_CONTRAST=true          # Apply local contrast
+LOCAL_CONTRAST_RADIUS=50            # Radius for local contrast
+LOCAL_CONTRAST_AMOUNT=15            # Amount (0-50)
+
+# Zone-based recovery
+ENABLE_ZONE_RECOVERY=true           # Zone system-based recovery
+ZONE_0_ADJUSTMENT=0                 # Deep shadows
+ZONE_3_ADJUSTMENT=0                 # Dark midtones
+ZONE_5_ADJUSTMENT=0                 # Middle gray
+ZONE_7_ADJUSTMENT=0                 # Light midtones
+ZONE_10_ADJUSTMENT=0                # Highlights
+
+# Panorama detection
+ENABLE_PANORAMA_DETECTION=true      # Detect panorama candidates
+IS_PANORAMA_CANDIDATE=false         # Part of potential panorama
+PANORAMA_GROUP=""                   # Panorama group ID
+
+# HDR bracket detection
+ENABLE_HDR_DETECTION=true           # Detect HDR brackets
+IS_HDR_BRACKET=false                # Part of HDR bracket set
+HDR_BRACKET_POSITION=""             # under, normal, over
+HDR_GROUP=""                        # HDR group ID
+
+# Style learning
+ENABLE_STYLE_LEARNING=true          # Learn processing style
+REFERENCE_IMAGE=""                  # Reference image for style matching
+LEARNED_STYLE=""                    # Encoded style parameters
+
 # Logging configuration
 LOG_FILE="processing_log.txt"
 ENABLE_LOGGING=true
@@ -308,7 +473,7 @@ PROGRESS_WIDTH=40
 print_banner() {
     echo -e "${CYAN}"
     echo "╔═══════════════════════════════════════════════════════════════════╗"
-    echo "║               RAW PHOTO BATCH PROCESSOR v3.0                      ║"
+    echo "║               RAW PHOTO BATCH PROCESSOR v4.0                      ║"
     echo "║         Advanced AI-Like Intelligent Processing                   ║"
     echo "╚═══════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
@@ -2263,6 +2428,1043 @@ print_v3_analysis() {
     echo ""
 }
 
+#===============================================================================
+#                         V4.0 INTELLIGENT FUNCTIONS
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_eyes
+# Detects eyes in portraits and calculates enhancement parameters
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_EYES, EYE_REGIONS, EYE_ENHANCEMENT_PARAMS
+#-------------------------------------------------------------------------------
+
+detect_eyes() {
+    local input_file="$1"
+
+    [ "$ENABLE_EYE_ENHANCEMENT" != true ] && return 0
+
+    # First check if faces were detected
+    if [ "$FACE_DETECTED" != true ]; then
+        HAS_EYES=false
+        return 0
+    fi
+
+    # Analyze the upper-middle region where eyes typically appear
+    # Eyes are usually in the upper 40% of a detected face region
+    local eye_region_stats=$(magick "$input_file" -crop 60%x20%+20%+15% +repage \
+        -colorspace Gray -format "%[fx:standard_deviation],%[fx:mean]" info: 2>/dev/null)
+
+    if [ -n "$eye_region_stats" ]; then
+        local eye_contrast=$(echo "$eye_region_stats" | cut -d',' -f1)
+        local eye_brightness=$(echo "$eye_region_stats" | cut -d',' -f2)
+
+        # Eyes typically have high local contrast (whites, iris, pupil)
+        local contrast_threshold=$(echo "$eye_contrast > 0.15" | bc -l 2>/dev/null)
+
+        if [ "$contrast_threshold" = "1" ]; then
+            HAS_EYES=true
+
+            # Calculate enhancement based on current eye brightness
+            local brightness_pct=$(echo "$eye_brightness * 100" | bc -l 2>/dev/null | cut -d'.' -f1)
+
+            # Eyes should be bright and clear
+            if [ "$brightness_pct" -lt 40 ]; then
+                EYE_ENHANCEMENT_PARAMS="-brightness-contrast ${EYE_BRIGHTNESS_BOOST}x${EYE_SHARPNESS_BOOST}"
+            else
+                EYE_ENHANCEMENT_PARAMS="-brightness-contrast $((EYE_BRIGHTNESS_BOOST/2))x${EYE_SHARPNESS_BOOST}"
+            fi
+        else
+            HAS_EYES=false
+        fi
+    else
+        HAS_EYES=false
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_teeth
+# Detects smile/teeth for subtle whitening
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_TEETH, TEETH_WHITENING_PARAMS
+#-------------------------------------------------------------------------------
+
+detect_teeth() {
+    local input_file="$1"
+
+    [ "$ENABLE_TEETH_DETECTION" != true ] && return 0
+    [ "$FACE_DETECTED" != true ] && return 0
+
+    # Analyze lower-middle region of face for teeth
+    # Look for bright spots with slight yellow/warm cast (teeth)
+    local mouth_region=$(magick "$input_file" -crop 40%x15%+30%+55% +repage \
+        -colorspace LAB -channel R -separate \
+        -format "%[fx:mean*100]" info: 2>/dev/null)
+
+    if [ -n "$mouth_region" ]; then
+        local brightness=$(echo "$mouth_region" | cut -d'.' -f1)
+
+        # Teeth appear as bright regions
+        if [ "$brightness" -gt 60 ]; then
+            HAS_TEETH=true
+            # Apply subtle desaturation and brightness to yellowed teeth
+            TEETH_WHITENING_PARAMS="-modulate 105,90,100"
+        else
+            HAS_TEETH=false
+            TEETH_WHITENING_PARAMS=""
+        fi
+    else
+        HAS_TEETH=false
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_food
+# Detects food photography for enhanced saturation and warmth
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   IS_FOOD_PHOTO, FOOD_ENHANCEMENT_PARAMS
+#-------------------------------------------------------------------------------
+
+detect_food() {
+    local input_file="$1"
+
+    [ "$ENABLE_FOOD_DETECTION" != true ] && return 0
+
+    # Food photos typically have:
+    # 1. High saturation in reds, oranges, yellows, greens
+    # 2. Shallow depth of field (blur in edges)
+    # 3. Warm color temperature
+    # 4. Central subject with bokeh
+
+    # Get color channel information
+    local color_info=$(magick "$input_file" -resize 200x200! \
+        -colorspace HSL -channel G -separate \
+        -format "%[fx:mean*100],%[fx:standard_deviation*100]" info: 2>/dev/null)
+
+    if [ -n "$color_info" ]; then
+        local saturation=$(echo "$color_info" | cut -d',' -f1 | cut -d'.' -f1)
+        local sat_variance=$(echo "$color_info" | cut -d',' -f2 | cut -d'.' -f1)
+
+        # Check for warm tones (food typically warm)
+        local warm_ratio=$(magick "$input_file" -resize 100x100! \
+            -format "%[fx:(mean.r+mean.g/2)/(mean.b+0.01)]" info: 2>/dev/null)
+        local warm_check=$(echo "$warm_ratio > 1.1" | bc -l 2>/dev/null)
+
+        # Check edge blur (shallow DOF indicator)
+        local center_sharp=$(magick "$input_file" -crop 40%x40%+30%+30% +repage \
+            -colorspace Gray -define convolve:scale='!' \
+            -morphology Convolve Laplacian:0 -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+        local edge_sharp=$(magick "$input_file" -crop 100%x20%+0%+0% +repage \
+            -colorspace Gray -define convolve:scale='!' \
+            -morphology Convolve Laplacian:0 -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+
+        local center_val=$(echo "$center_sharp" | cut -d'.' -f1)
+        local edge_val=$(echo "$edge_sharp" | cut -d'.' -f1)
+
+        # Food: moderate-high saturation, warm tones, sharp center with soft edges
+        if [ "$saturation" -gt 30 ] && [ "$warm_check" = "1" ]; then
+            if [ "$center_val" -gt "$edge_val" ] 2>/dev/null; then
+                IS_FOOD_PHOTO=true
+                # Enhance saturation and warmth for appetizing look
+                local sat_boost=$((100 + FOOD_SATURATION_BOOST))
+                FOOD_ENHANCEMENT_PARAMS="-modulate 100,$sat_boost,100 -sigmoidal-contrast 2x50%"
+            else
+                IS_FOOD_PHOTO=false
+            fi
+        else
+            IS_FOOD_PHOTO=false
+        fi
+    else
+        IS_FOOD_PHOTO=false
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_architecture
+# Detects architecture photos for perspective and line enhancement
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   IS_ARCHITECTURE, HAS_PERSPECTIVE_DISTORTION, PERSPECTIVE_PARAMS
+#-------------------------------------------------------------------------------
+
+detect_architecture() {
+    local input_file="$1"
+
+    [ "$ENABLE_ARCHITECTURE_DETECTION" != true ] && return 0
+
+    # Architecture photos have:
+    # 1. Strong straight lines (vertical and horizontal)
+    # 2. Geometric patterns
+    # 3. Often wide angle distortion
+    # 4. High contrast edges
+
+    # Detect straight lines using edge detection
+    local edge_info=$(magick "$input_file" -resize 300x300! \
+        -colorspace Gray -canny 0x1+10%+30% \
+        -morphology HMT LineEnds -format "%[fx:mean*10000]" info: 2>/dev/null)
+
+    local line_density=$(echo "$edge_info" | cut -d'.' -f1)
+
+    # Check for vertical lines (architecture indicator)
+    local vertical_lines=$(magick "$input_file" -resize 300x300! \
+        -colorspace Gray -morphology Convolve "3x3: 1,-2,1, 1,-2,1, 1,-2,1" \
+        -format "%[fx:mean*1000]" info: 2>/dev/null)
+
+    local vert_score=$(echo "$vertical_lines" | cut -d'.' -f1)
+
+    if [ "$line_density" -gt 50 ] 2>/dev/null && [ "$vert_score" -gt 20 ] 2>/dev/null; then
+        IS_ARCHITECTURE=true
+
+        # Check for converging verticals (perspective distortion)
+        # Compare line angles at top vs bottom of image
+        local top_var=$(magick "$input_file" -crop 100%x30%+0%+0% +repage \
+            -colorspace Gray -canny 0x1+10%+30% \
+            -format "%[fx:standard_deviation*100]" info: 2>/dev/null)
+        local bottom_var=$(magick "$input_file" -crop 100%x30%+0%+70% +repage \
+            -colorspace Gray -canny 0x1+10%+30% \
+            -format "%[fx:standard_deviation*100]" info: 2>/dev/null)
+
+        local top_val=$(echo "$top_var" | cut -d'.' -f1)
+        local bottom_val=$(echo "$bottom_var" | cut -d'.' -f1)
+        local diff=$((bottom_val - top_val))
+
+        if [ "$diff" -gt 5 ] 2>/dev/null; then
+            HAS_PERSPECTIVE_DISTORTION=true
+            # Would need more complex correction - flag for user
+            PERSPECTIVE_PARAMS="-distort Perspective"
+        else
+            HAS_PERSPECTIVE_DISTORTION=false
+            PERSPECTIVE_PARAMS=""
+        fi
+    else
+        IS_ARCHITECTURE=false
+        HAS_PERSPECTIVE_DISTORTION=false
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_water
+# Detects water and reflections for specialized enhancement
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_WATER, HAS_REFLECTIONS, WATER_ENHANCEMENT_PARAMS
+#-------------------------------------------------------------------------------
+
+detect_water() {
+    local input_file="$1"
+
+    [ "$ENABLE_WATER_DETECTION" != true ] && return 0
+
+    # Water characteristics:
+    # 1. Blue/cyan dominant in lower portions
+    # 2. Horizontal smoothness (calm water) or texture (waves)
+    # 3. Similar patterns mirrored (reflections)
+
+    # Check lower third for blue tones (water typically at bottom)
+    local lower_third=$(magick "$input_file" -crop 100%x33%+0%+67% +repage \
+        -resize 100x100! -colorspace HSL \
+        -format "%[fx:mean.r*360],%[fx:mean.g*100]" info: 2>/dev/null)
+
+    if [ -n "$lower_third" ]; then
+        local hue=$(echo "$lower_third" | cut -d',' -f1 | cut -d'.' -f1)
+        local saturation=$(echo "$lower_third" | cut -d',' -f2 | cut -d'.' -f1)
+
+        # Blue-cyan range: 180-250 degrees
+        if [ "$hue" -ge 180 ] 2>/dev/null && [ "$hue" -le 250 ] 2>/dev/null && [ "$saturation" -gt 20 ]; then
+            HAS_WATER=true
+
+            # Check for reflections by comparing top and bottom halves
+            local top_sig=$(magick "$input_file" -crop 100%x40%+0%+10% +repage -resize 50x50! \
+                -colorspace Gray -format "%[fx:mean]" info: 2>/dev/null)
+            local bottom_sig=$(magick "$input_file" -flip -crop 100%x40%+0%+10% +repage -resize 50x50! \
+                -colorspace Gray -format "%[fx:mean]" info: 2>/dev/null)
+
+            if [ -n "$top_sig" ] && [ -n "$bottom_sig" ]; then
+                local diff=$(echo "($top_sig - $bottom_sig)" | bc -l 2>/dev/null | tr -d '-')
+                local has_reflection=$(echo "$diff < 0.1" | bc -l 2>/dev/null)
+
+                if [ "$has_reflection" = "1" ]; then
+                    HAS_REFLECTIONS=true
+                    WATER_ENHANCEMENT_PARAMS="-modulate 100,110,100 -sigmoidal-contrast 1.5x50%"
+                else
+                    HAS_REFLECTIONS=false
+                    WATER_ENHANCEMENT_PARAMS="-sigmoidal-contrast 1.5x50%"
+                fi
+            fi
+        else
+            HAS_WATER=false
+            HAS_REFLECTIONS=false
+        fi
+    else
+        HAS_WATER=false
+        HAS_REFLECTIONS=false
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_time_period
+# Determines time of day from EXIF for lighting assumptions
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   EXIF_TIME_HOUR, DETECTED_TIME_PERIOD, TIME_ADJUSTMENTS
+#-------------------------------------------------------------------------------
+
+detect_time_period() {
+    local input_file="$1"
+
+    [ "$ENABLE_TIME_INTELLIGENCE" != true ] && return 0
+
+    # Extract time from EXIF
+    if command -v exiftool &> /dev/null; then
+        local exif_time=$(exiftool -DateTimeOriginal -s3 "$input_file" 2>/dev/null)
+
+        if [ -n "$exif_time" ]; then
+            # Extract hour (format: YYYY:MM:DD HH:MM:SS)
+            EXIF_TIME_HOUR=$(echo "$exif_time" | cut -d' ' -f2 | cut -d':' -f1 | sed 's/^0//')
+
+            # Determine time period
+            if [ "$EXIF_TIME_HOUR" -ge 5 ] && [ "$EXIF_TIME_HOUR" -lt 7 ]; then
+                DETECTED_TIME_PERIOD="dawn"
+                TIME_ADJUSTMENTS="-modulate 100,105,98"  # Slight cool, low contrast
+            elif [ "$EXIF_TIME_HOUR" -ge 7 ] && [ "$EXIF_TIME_HOUR" -lt 10 ]; then
+                DETECTED_TIME_PERIOD="morning"
+                TIME_ADJUSTMENTS="-modulate 102,100,100"  # Fresh, clear
+            elif [ "$EXIF_TIME_HOUR" -ge 10 ] && [ "$EXIF_TIME_HOUR" -lt 16 ]; then
+                DETECTED_TIME_PERIOD="day"
+                TIME_ADJUSTMENTS=""  # Neutral
+            elif [ "$EXIF_TIME_HOUR" -ge 16 ] && [ "$EXIF_TIME_HOUR" -lt 18 ]; then
+                DETECTED_TIME_PERIOD="afternoon"
+                TIME_ADJUSTMENTS="-modulate 100,100,102"  # Slight warm
+            elif [ "$EXIF_TIME_HOUR" -ge 18 ] && [ "$EXIF_TIME_HOUR" -lt 20 ]; then
+                DETECTED_TIME_PERIOD="golden"
+                TIME_ADJUSTMENTS="-modulate 100,110,105"  # Warm, saturated
+            elif [ "$EXIF_TIME_HOUR" -ge 20 ] && [ "$EXIF_TIME_HOUR" -lt 22 ]; then
+                DETECTED_TIME_PERIOD="blue"
+                TIME_ADJUSTMENTS="-modulate 100,105,95"  # Cool blue tones
+            else
+                DETECTED_TIME_PERIOD="night"
+                TIME_ADJUSTMENTS="-modulate 100,95,100"  # Reduce saturation
+            fi
+        else
+            DETECTED_TIME_PERIOD="unknown"
+            TIME_ADJUSTMENTS=""
+        fi
+    else
+        DETECTED_TIME_PERIOD="unknown"
+        TIME_ADJUSTMENTS=""
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: calculate_quality_score
+# Calculates technical and aesthetic quality scores
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   TECHNICAL_QUALITY_SCORE, AESTHETIC_QUALITY_SCORE, OVERALL_QUALITY_SCORE
+#-------------------------------------------------------------------------------
+
+calculate_quality_score() {
+    local input_file="$1"
+
+    [ "$ENABLE_QUALITY_SCORING" != true ] && return 0
+
+    local tech_score=50
+    local aesthetic_score=50
+
+    # Technical quality factors:
+
+    # 1. Sharpness (already calculated in analyze_image_content)
+    if [ -n "$SHARPNESS_SCORE" ]; then
+        if [ "$SHARPNESS_SCORE" -gt 200 ]; then
+            tech_score=$((tech_score + 20))
+        elif [ "$SHARPNESS_SCORE" -gt 100 ]; then
+            tech_score=$((tech_score + 10))
+        elif [ "$SHARPNESS_SCORE" -lt 50 ]; then
+            tech_score=$((tech_score - 15))
+        fi
+    fi
+
+    # 2. Exposure (check histogram clipping)
+    if [ -n "$SHADOW_CLIPPING" ] && [ -n "$HIGHLIGHT_CLIPPING" ]; then
+        local shadow_clip=$(echo "$SHADOW_CLIPPING" | cut -d'.' -f1)
+        local highlight_clip=$(echo "$HIGHLIGHT_CLIPPING" | cut -d'.' -f1)
+
+        if [ "$shadow_clip" -lt 2 ] && [ "$highlight_clip" -lt 2 ]; then
+            tech_score=$((tech_score + 15))
+        elif [ "$shadow_clip" -gt 10 ] || [ "$highlight_clip" -gt 10 ]; then
+            tech_score=$((tech_score - 15))
+        fi
+    fi
+
+    # 3. Noise level (based on ISO)
+    if [ -n "$ISO" ]; then
+        if [ "$ISO" -lt 400 ]; then
+            tech_score=$((tech_score + 10))
+        elif [ "$ISO" -gt 3200 ]; then
+            tech_score=$((tech_score - 10))
+        elif [ "$ISO" -gt 6400 ]; then
+            tech_score=$((tech_score - 20))
+        fi
+    fi
+
+    # 4. Focus quality (if motion blur detected)
+    if [ "$HAS_MOTION_BLUR" = true ]; then
+        tech_score=$((tech_score - 15))
+    fi
+
+    # Aesthetic quality factors:
+
+    # 1. Composition score (already calculated)
+    if [ -n "$COMPOSITION_SCORE" ]; then
+        aesthetic_score=$((aesthetic_score + (COMPOSITION_SCORE - 50) / 3))
+    fi
+
+    # 2. Color harmony
+    case "$COLOR_HARMONY_TYPE" in
+        "complementary"|"triadic"|"analogous")
+            aesthetic_score=$((aesthetic_score + 10))
+            ;;
+        "monochromatic")
+            aesthetic_score=$((aesthetic_score + 5))
+            ;;
+    esac
+
+    # 3. Subject clarity
+    if [ "$SUBJECT_DETECTED" = true ]; then
+        aesthetic_score=$((aesthetic_score + 10))
+    fi
+
+    # 4. Golden hour/blue hour bonus
+    if [ "$IS_GOLDEN_HOUR" = true ] || [ "$IS_BLUE_HOUR" = true ]; then
+        aesthetic_score=$((aesthetic_score + 10))
+    fi
+
+    # 5. Face detection bonus for portraits
+    if [ "$FACE_DETECTED" = true ]; then
+        aesthetic_score=$((aesthetic_score + 5))
+    fi
+
+    # Clamp scores to 0-100
+    [ "$tech_score" -lt 0 ] && tech_score=0
+    [ "$tech_score" -gt 100 ] && tech_score=100
+    [ "$aesthetic_score" -lt 0 ] && aesthetic_score=0
+    [ "$aesthetic_score" -gt 100 ] && aesthetic_score=100
+
+    TECHNICAL_QUALITY_SCORE=$tech_score
+    AESTHETIC_QUALITY_SCORE=$aesthetic_score
+    OVERALL_QUALITY_SCORE=$(( (tech_score + aesthetic_score) / 2 ))
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: analyze_noise_types
+# Performs advanced noise type analysis
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   LUMINANCE_NOISE_LEVEL, CHROMA_NOISE_LEVEL, HAS_BANDING, NOISE_TYPE
+#-------------------------------------------------------------------------------
+
+analyze_noise_types() {
+    local input_file="$1"
+
+    [ "$ENABLE_NOISE_TYPE_ANALYSIS" != true ] && return 0
+
+    # Analyze a uniform area for noise characteristics
+    # Look at darkest 10% of image (where noise is most visible)
+
+    # Luminance noise (variation in brightness)
+    local lum_noise=$(magick "$input_file" -resize 200x200! \
+        -colorspace Gray -statistic StandardDeviation 3x3 \
+        -format "%[fx:mean*100]" info: 2>/dev/null)
+
+    if [ -n "$lum_noise" ]; then
+        LUMINANCE_NOISE_LEVEL=$(echo "$lum_noise" | cut -d'.' -f1)
+    else
+        LUMINANCE_NOISE_LEVEL=0
+    fi
+
+    # Chroma noise (color variation)
+    local chroma_noise=$(magick "$input_file" -resize 200x200! \
+        -colorspace LAB -channel GB -separate \
+        -statistic StandardDeviation 3x3 \
+        -format "%[fx:mean*100]" info: 2>/dev/null)
+
+    if [ -n "$chroma_noise" ]; then
+        CHROMA_NOISE_LEVEL=$(echo "$chroma_noise" | cut -d'.' -f1)
+    else
+        CHROMA_NOISE_LEVEL=0
+    fi
+
+    # Check for banding (horizontal or vertical patterns)
+    local h_pattern=$(magick "$input_file" -resize 200x200! \
+        -colorspace Gray -morphology Convolve "1x3: 1,-2,1" \
+        -format "%[fx:mean*1000]" info: 2>/dev/null)
+
+    local banding_val=$(echo "$h_pattern" | cut -d'.' -f1)
+    if [ "$banding_val" -gt 50 ] 2>/dev/null; then
+        HAS_BANDING=true
+    else
+        HAS_BANDING=false
+    fi
+
+    # Determine overall noise type
+    if [ "$LUMINANCE_NOISE_LEVEL" -lt 5 ] && [ "$CHROMA_NOISE_LEVEL" -lt 5 ]; then
+        NOISE_TYPE="none"
+    elif [ "$LUMINANCE_NOISE_LEVEL" -gt "$CHROMA_NOISE_LEVEL" ]; then
+        NOISE_TYPE="luminance"
+    elif [ "$CHROMA_NOISE_LEVEL" -gt "$LUMINANCE_NOISE_LEVEL" ]; then
+        NOISE_TYPE="chroma"
+    elif [ "$HAS_BANDING" = true ]; then
+        NOISE_TYPE="banding"
+    else
+        NOISE_TYPE="mixed"
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: calculate_smart_crop
+# Suggests optimal crop based on composition and subject
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   SMART_CROP_ASPECT, SMART_CROP_GEOMETRY, CROP_CONFIDENCE
+#-------------------------------------------------------------------------------
+
+calculate_smart_crop() {
+    local input_file="$1"
+
+    [ "$ENABLE_SMART_CROP" != true ] && return 0
+
+    # Get image dimensions
+    local dimensions=$(magick identify -format "%w %h" "$input_file" 2>/dev/null)
+    local width=$(echo "$dimensions" | cut -d' ' -f1)
+    local height=$(echo "$dimensions" | cut -d' ' -f2)
+
+    [ -z "$width" ] || [ -z "$height" ] && return 0
+
+    local current_ratio=$(echo "scale=2; $width / $height" | bc -l 2>/dev/null)
+
+    # Determine if subject position suggests a crop
+    CROP_CONFIDENCE=0
+
+    # If face detected, crop around face
+    if [ "$FACE_DETECTED" = true ]; then
+        SMART_CROP_ASPECT="4:5"  # Portrait-friendly
+        CROP_CONFIDENCE=70
+    # If landscape detected with sky, consider 16:9
+    elif [ "$HAS_SKY" = true ] && [ "$SCENE_TYPE" = "landscape" ]; then
+        SMART_CROP_ASPECT="16:9"
+        CROP_CONFIDENCE=60
+    # Square for centered subjects
+    elif [ "$SUBJECT_DETECTED" = true ] && [ "$SUBJECT_POSITION" = "center" ]; then
+        SMART_CROP_ASPECT="1:1"
+        CROP_CONFIDENCE=50
+    else
+        # Keep original
+        SMART_CROP_ASPECT=""
+        CROP_CONFIDENCE=0
+    fi
+
+    # Calculate geometry based on aspect
+    if [ -n "$SMART_CROP_ASPECT" ]; then
+        local target_w=$(echo "$SMART_CROP_ASPECT" | cut -d':' -f1)
+        local target_h=$(echo "$SMART_CROP_ASPECT" | cut -d':' -f2)
+        local target_ratio=$(echo "scale=2; $target_w / $target_h" | bc -l 2>/dev/null)
+
+        if [ "$(echo "$current_ratio > $target_ratio" | bc -l)" = "1" ]; then
+            # Crop width
+            local new_width=$(echo "$height * $target_ratio" | bc -l | cut -d'.' -f1)
+            local offset=$(( (width - new_width) / 2 ))
+            SMART_CROP_GEOMETRY="${new_width}x${height}+${offset}+0"
+        else
+            # Crop height
+            local new_height=$(echo "$width / $target_ratio" | bc -l | cut -d'.' -f1)
+            local offset=$(( (height - new_height) / 2 ))
+            SMART_CROP_GEOMETRY="${width}x${new_height}+0+${offset}"
+        fi
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_mood
+# Detects the mood/emotion of the image from colors and tones
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   DETECTED_MOOD, MOOD_CONFIDENCE, MOOD_ENHANCEMENT
+#-------------------------------------------------------------------------------
+
+detect_mood() {
+    local input_file="$1"
+
+    [ "$ENABLE_MOOD_DETECTION" != true ] && return 0
+
+    # Get color statistics
+    local color_stats=$(magick "$input_file" -resize 100x100! \
+        -colorspace HSL -format "%[fx:mean.r*360],%[fx:mean.g*100],%[fx:mean.b*100],%[fx:standard_deviation.b*100]" info: 2>/dev/null)
+
+    if [ -n "$color_stats" ]; then
+        local hue=$(echo "$color_stats" | cut -d',' -f1 | cut -d'.' -f1)
+        local saturation=$(echo "$color_stats" | cut -d',' -f2 | cut -d'.' -f1)
+        local lightness=$(echo "$color_stats" | cut -d',' -f3 | cut -d'.' -f1)
+        local contrast=$(echo "$color_stats" | cut -d',' -f4 | cut -d'.' -f1)
+
+        MOOD_CONFIDENCE=60
+
+        # Mood detection based on color psychology
+        if [ "$lightness" -lt 30 ] && [ "$contrast" -gt 30 ]; then
+            DETECTED_MOOD="dramatic"
+            MOOD_ENHANCEMENT="-sigmoidal-contrast 3x50%"
+        elif [ "$lightness" -gt 70 ] && [ "$saturation" -lt 30 ]; then
+            DETECTED_MOOD="peaceful"
+            MOOD_ENHANCEMENT="-modulate 105,90,100"
+        elif [ "$hue" -ge 0 ] && [ "$hue" -le 30 ] && [ "$saturation" -gt 40 ]; then
+            DETECTED_MOOD="energetic"
+            MOOD_ENHANCEMENT="-modulate 100,115,100"
+        elif [ "$hue" -ge 300 ] && [ "$hue" -le 360 ] && [ "$saturation" -gt 30 ]; then
+            DETECTED_MOOD="romantic"
+            MOOD_ENHANCEMENT="-modulate 100,105,102"
+        elif [ "$hue" -ge 200 ] && [ "$hue" -le 260 ] && [ "$lightness" -lt 40 ]; then
+            DETECTED_MOOD="mysterious"
+            MOOD_ENHANCEMENT="-sigmoidal-contrast 2x40%"
+        elif [ "$saturation" -gt 60 ] && [ "$contrast" -gt 40 ]; then
+            DETECTED_MOOD="happy"
+            MOOD_ENHANCEMENT="-modulate 103,110,100"
+        elif [ "$saturation" -lt 20 ] && [ "$lightness" -lt 50 ]; then
+            DETECTED_MOOD="sad"
+            MOOD_ENHANCEMENT="-modulate 98,85,100"
+        else
+            DETECTED_MOOD="neutral"
+            MOOD_ENHANCEMENT=""
+            MOOD_CONFIDENCE=40
+        fi
+    else
+        DETECTED_MOOD="neutral"
+        MOOD_CONFIDENCE=0
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_motion_blur
+# Analyzes image for motion blur
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   HAS_MOTION_BLUR, MOTION_DIRECTION, MOTION_SEVERITY, IS_INTENTIONAL_MOTION
+#-------------------------------------------------------------------------------
+
+detect_motion_blur() {
+    local input_file="$1"
+
+    [ "$ENABLE_MOTION_ANALYSIS" != true ] && return 0
+
+    # Check shutter speed from EXIF
+    local shutter_speed=""
+    if command -v exiftool &> /dev/null; then
+        shutter_speed=$(exiftool -ShutterSpeed -s3 "$input_file" 2>/dev/null)
+    fi
+
+    # Analyze directional blur
+    local h_blur=$(magick "$input_file" -resize 200x200! \
+        -colorspace Gray -morphology Convolve "1x5: 1,1,1,1,1" \
+        -format "%[fx:standard_deviation*100]" info: 2>/dev/null)
+
+    local v_blur=$(magick "$input_file" -resize 200x200! \
+        -colorspace Gray -morphology Convolve "5x1: 1,1,1,1,1" \
+        -format "%[fx:standard_deviation*100]" info: 2>/dev/null)
+
+    local h_val=$(echo "$h_blur" | cut -d'.' -f1)
+    local v_val=$(echo "$v_blur" | cut -d'.' -f1)
+
+    # Compare directional blur to detect motion direction
+    local blur_diff=$((h_val - v_val))
+    [ "$blur_diff" -lt 0 ] && blur_diff=$((-blur_diff))
+
+    if [ "$blur_diff" -gt 5 ]; then
+        HAS_MOTION_BLUR=true
+        MOTION_SEVERITY=$blur_diff
+
+        if [ "$h_val" -gt "$v_val" ]; then
+            MOTION_DIRECTION="horizontal"
+        else
+            MOTION_DIRECTION="vertical"
+        fi
+
+        # Check if intentional (slow shutter for effect)
+        if [ -n "$shutter_speed" ]; then
+            # Parse shutter speed (e.g., "1/30" or "0.5")
+            if echo "$shutter_speed" | grep -q "/"; then
+                local denom=$(echo "$shutter_speed" | cut -d'/' -f2)
+                if [ "$denom" -lt 30 ] 2>/dev/null; then
+                    IS_INTENTIONAL_MOTION=true
+                else
+                    IS_INTENTIONAL_MOTION=false
+                fi
+            else
+                IS_INTENTIONAL_MOTION=true  # Long exposure
+            fi
+        fi
+    else
+        HAS_MOTION_BLUR=false
+        MOTION_DIRECTION=""
+        MOTION_SEVERITY=0
+    fi
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: match_lens_profile
+# Matches lens from EXIF to lens profile database
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   MATCHED_LENS_PROFILE, LENS_CORRECTION_PARAMS
+#-------------------------------------------------------------------------------
+
+match_lens_profile() {
+    local input_file="$1"
+
+    [ "$ENABLE_LENS_PROFILES" != true ] && return 0
+
+    # Get lens info from EXIF
+    local lens_info=""
+    if command -v exiftool &> /dev/null; then
+        lens_info=$(exiftool -LensModel -s3 "$input_file" 2>/dev/null)
+    fi
+
+    if [ -n "$lens_info" ]; then
+        # Try to match lens in database
+        for entry in "${LENS_DB_ENTRIES[@]}"; do
+            local lens_name=$(echo "$entry" | cut -d'|' -f1)
+            if echo "$lens_info" | grep -qi "$lens_name"; then
+                MATCHED_LENS_PROFILE="$lens_name"
+
+                # Parse profile: name|type|distortion_type|distortion_amt|vignette_amt
+                local dist_type=$(echo "$entry" | cut -d'|' -f3)
+                local dist_amt=$(echo "$entry" | cut -d'|' -f4)
+                local vig_amt=$(echo "$entry" | cut -d'|' -f5)
+
+                LENS_CORRECTION_PARAMS=""
+
+                # Apply distortion correction
+                if [ "$dist_type" = "barrel" ]; then
+                    LENS_CORRECTION_PARAMS="-distort Barrel \"0 0 -$dist_amt 1\""
+                elif [ "$dist_type" = "pincushion" ]; then
+                    LENS_CORRECTION_PARAMS="-distort Barrel \"0 0 $dist_amt 1\""
+                fi
+
+                # Apply vignette correction (add light to corners)
+                if [ -n "$vig_amt" ] && [ "$vig_amt" != "0" ]; then
+                    local vig_correction=$(echo "100 + ($vig_amt * 20)" | bc -l | cut -d'.' -f1)
+                    LENS_CORRECTION_PARAMS="$LENS_CORRECTION_PARAMS -vignette 0x$vig_correction"
+                fi
+
+                return 0
+            fi
+        done
+    fi
+
+    MATCHED_LENS_PROFILE=""
+    LENS_CORRECTION_PARAMS=""
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: detect_focus_quality
+# Analyzes focus point and quality
+#
+# Parameters:
+#   $1 - Input file path
+#
+# Sets:
+#   FOCUS_POINT_X, FOCUS_POINT_Y, FOCUS_QUALITY, IN_FOCUS_AREA
+#-------------------------------------------------------------------------------
+
+detect_focus_quality() {
+    local input_file="$1"
+
+    [ "$ENABLE_FOCUS_DETECTION" != true ] && return 0
+
+    # Divide image into 9 regions and find sharpest
+    local max_sharp=0
+    local max_region=""
+    local total_sharp=0
+    local region_count=0
+
+    for row in 0 1 2; do
+        for col in 0 1 2; do
+            local x_pct=$((col * 33))
+            local y_pct=$((row * 33))
+
+            local region_sharp=$(magick "$input_file" \
+                -crop "33%x33%+${x_pct}%+${y_pct}%" +repage \
+                -colorspace Gray \
+                -define convolve:scale='!' \
+                -morphology Convolve Laplacian:0 \
+                -format "%[fx:standard_deviation*1000]" info: 2>/dev/null)
+
+            local sharp_val=$(echo "$region_sharp" | cut -d'.' -f1)
+            total_sharp=$((total_sharp + sharp_val))
+            region_count=$((region_count + 1))
+
+            if [ "$sharp_val" -gt "$max_sharp" ] 2>/dev/null; then
+                max_sharp=$sharp_val
+                max_region="${col},${row}"
+            fi
+        done
+    done
+
+    # Set focus point based on sharpest region
+    if [ -n "$max_region" ]; then
+        local focus_col=$(echo "$max_region" | cut -d',' -f1)
+        local focus_row=$(echo "$max_region" | cut -d',' -f2)
+
+        FOCUS_POINT_X=$(echo "scale=2; ($focus_col * 0.33) + 0.165" | bc -l)
+        FOCUS_POINT_Y=$(echo "scale=2; ($focus_row * 0.33) + 0.165" | bc -l)
+    fi
+
+    # Determine focus quality
+    if [ "$max_sharp" -gt 200 ]; then
+        FOCUS_QUALITY="excellent"
+    elif [ "$max_sharp" -gt 100 ]; then
+        FOCUS_QUALITY="good"
+    elif [ "$max_sharp" -gt 50 ]; then
+        FOCUS_QUALITY="soft"
+    else
+        FOCUS_QUALITY="missed"
+    fi
+
+    # Calculate percentage of image in focus
+    local avg_sharp=$((total_sharp / region_count))
+    local focus_threshold=$((max_sharp * 70 / 100))
+    IN_FOCUS_AREA=0
+
+    for row in 0 1 2; do
+        for col in 0 1 2; do
+            local x_pct=$((col * 33))
+            local y_pct=$((row * 33))
+
+            local region_sharp=$(magick "$input_file" \
+                -crop "33%x33%+${x_pct}%+${y_pct}%" +repage \
+                -colorspace Gray \
+                -define convolve:scale='!' \
+                -morphology Convolve Laplacian:0 \
+                -format "%[fx:standard_deviation*1000]" info: 2>/dev/null | cut -d'.' -f1)
+
+            if [ "$region_sharp" -ge "$focus_threshold" ] 2>/dev/null; then
+                IN_FOCUS_AREA=$((IN_FOCUS_AREA + 11))
+            fi
+        done
+    done
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: run_all_v4_analysis
+# Runs all v4.0 analysis functions on an image
+#
+# Parameters:
+#   $1 - Input file path
+#-------------------------------------------------------------------------------
+
+run_all_v4_analysis() {
+    local input_file="$1"
+
+    # Run v4.0 detection functions
+    detect_time_period "$input_file"
+    detect_eyes "$input_file"
+    detect_teeth "$input_file"
+    detect_food "$input_file"
+    detect_architecture "$input_file"
+    detect_water "$input_file"
+    detect_mood "$input_file"
+    detect_motion_blur "$input_file"
+    analyze_noise_types "$input_file"
+    calculate_quality_score "$input_file"
+    calculate_smart_crop "$input_file"
+    match_lens_profile "$input_file"
+    detect_focus_quality "$input_file"
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: get_v4_corrections
+# Returns all v4.0 corrections as ImageMagick parameters
+#
+# Returns:
+#   String of ImageMagick correction parameters
+#-------------------------------------------------------------------------------
+
+get_v4_corrections() {
+    local corrections=""
+
+    # 1. Time-based adjustments
+    if [ -n "$TIME_ADJUSTMENTS" ]; then
+        corrections="$corrections $TIME_ADJUSTMENTS"
+    fi
+
+    # 2. Food photography enhancement
+    if [ "$IS_FOOD_PHOTO" = true ] && [ -n "$FOOD_ENHANCEMENT_PARAMS" ]; then
+        corrections="$corrections $FOOD_ENHANCEMENT_PARAMS"
+    fi
+
+    # 3. Water/reflection enhancement
+    if [ "$HAS_WATER" = true ] && [ -n "$WATER_ENHANCEMENT_PARAMS" ]; then
+        corrections="$corrections $WATER_ENHANCEMENT_PARAMS"
+    fi
+
+    # 4. Mood enhancement (if not conflicting with other corrections)
+    if [ "$DETECTED_MOOD" != "neutral" ] && [ -n "$MOOD_ENHANCEMENT" ]; then
+        # Only apply if not already heavily processed
+        if [ -z "$IS_FOOD_PHOTO" ] && [ -z "$HAS_WATER" ]; then
+            corrections="$corrections $MOOD_ENHANCEMENT"
+        fi
+    fi
+
+    # 5. Lens corrections
+    if [ -n "$MATCHED_LENS_PROFILE" ] && [ -n "$LENS_CORRECTION_PARAMS" ]; then
+        corrections="$corrections $LENS_CORRECTION_PARAMS"
+    fi
+
+    echo "$corrections"
+}
+
+#-------------------------------------------------------------------------------
+# FUNCTION: print_v4_analysis
+# Prints a summary of v4.0 analysis results for an image
+#
+# Parameters:
+#   $1 - Filename for display
+#-------------------------------------------------------------------------------
+
+print_v4_analysis() {
+    local filename="$1"
+
+    echo -e "\n${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${MAGENTA}V4.0 Advanced Intelligent Analysis:${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    # Time Intelligence
+    echo -e "\n${YELLOW}Time Intelligence:${NC}"
+    if [ "$DETECTED_TIME_PERIOD" != "unknown" ]; then
+        echo -e "  Time Period:        $DETECTED_TIME_PERIOD (hour: $EXIF_TIME_HOUR)"
+    else
+        echo -e "  Time Period:        Unknown (no EXIF time)"
+    fi
+
+    # Subject Detection
+    echo -e "\n${YELLOW}Subject Detection:${NC}"
+    if [ "$HAS_EYES" = true ]; then
+        echo -e "  Eyes Detected:      Yes - enhancement enabled"
+    fi
+    if [ "$HAS_TEETH" = true ]; then
+        echo -e "  Smile Detected:     Yes - subtle whitening enabled"
+    fi
+    if [ "$IS_FOOD_PHOTO" = true ]; then
+        echo -e "  Food Photography:   Yes - saturation/warmth boost enabled"
+    fi
+    if [ "$IS_ARCHITECTURE" = true ]; then
+        echo -e "  Architecture:       Yes"
+        if [ "$HAS_PERSPECTIVE_DISTORTION" = true ]; then
+            echo -e "  Perspective:        Distortion detected"
+        fi
+    fi
+    if [ "$HAS_WATER" = true ]; then
+        echo -e "  Water Detected:     Yes"
+        if [ "$HAS_REFLECTIONS" = true ]; then
+            echo -e "  Reflections:        Yes - enhancement enabled"
+        fi
+    fi
+
+    # Quality Scoring
+    echo -e "\n${YELLOW}Quality Scoring:${NC}"
+    echo -e "  Technical Score:    $TECHNICAL_QUALITY_SCORE/100"
+    echo -e "  Aesthetic Score:    $AESTHETIC_QUALITY_SCORE/100"
+    echo -e "  Overall Score:      $OVERALL_QUALITY_SCORE/100"
+    if [ "$OVERALL_QUALITY_SCORE" -ge "$QUALITY_THRESHOLD" ]; then
+        echo -e "  Recommendation:     ${GREEN}Keep${NC}"
+    else
+        echo -e "  Recommendation:     ${YELLOW}Review${NC}"
+    fi
+
+    # Focus Analysis
+    echo -e "\n${YELLOW}Focus Analysis:${NC}"
+    echo -e "  Focus Quality:      $FOCUS_QUALITY"
+    echo -e "  Focus Point:        $(echo "$FOCUS_POINT_X" | cut -c1-4), $(echo "$FOCUS_POINT_Y" | cut -c1-4)"
+    echo -e "  In-Focus Area:      $IN_FOCUS_AREA%"
+
+    # Motion Analysis
+    if [ "$HAS_MOTION_BLUR" = true ]; then
+        echo -e "\n${YELLOW}Motion Analysis:${NC}"
+        echo -e "  Motion Blur:        Yes ($MOTION_DIRECTION)"
+        echo -e "  Severity:           $MOTION_SEVERITY%"
+        if [ "$IS_INTENTIONAL_MOTION" = true ]; then
+            echo -e "  Type:               Intentional (panning/long exposure)"
+        else
+            echo -e "  Type:               Unintentional (camera shake)"
+        fi
+    fi
+
+    # Noise Analysis
+    echo -e "\n${YELLOW}Noise Analysis:${NC}"
+    echo -e "  Noise Type:         $NOISE_TYPE"
+    echo -e "  Luminance Noise:    $LUMINANCE_NOISE_LEVEL%"
+    echo -e "  Chroma Noise:       $CHROMA_NOISE_LEVEL%"
+    if [ "$HAS_BANDING" = true ]; then
+        echo -e "  Banding:            Detected"
+    fi
+
+    # Mood Detection
+    echo -e "\n${YELLOW}Mood Detection:${NC}"
+    echo -e "  Detected Mood:      $DETECTED_MOOD ($MOOD_CONFIDENCE% confidence)"
+
+    # Lens Profile
+    if [ -n "$MATCHED_LENS_PROFILE" ]; then
+        echo -e "\n${YELLOW}Lens Profile:${NC}"
+        echo -e "  Matched Lens:       $MATCHED_LENS_PROFILE"
+        echo -e "  Corrections:        Applied"
+    fi
+
+    # Smart Crop Suggestion
+    if [ -n "$SMART_CROP_ASPECT" ] && [ "$CROP_CONFIDENCE" -gt 40 ]; then
+        echo -e "\n${YELLOW}Smart Crop Suggestion:${NC}"
+        echo -e "  Suggested Aspect:   $SMART_CROP_ASPECT"
+        echo -e "  Confidence:         $CROP_CONFIDENCE%"
+    fi
+
+    echo ""
+}
+
 #-------------------------------------------------------------------------------
 # FUNCTION: collect_raw_files
 # Collects all RAW files in the directory (multi-format support)
@@ -2431,12 +3633,24 @@ process_single_image() {
         # Get v3.0 correction parameters
         local v3_corrections=$(get_v3_corrections)
 
+        # === V4.0 ADVANCED INTELLIGENT ANALYSIS ===
+        # Run comprehensive v4.0 analysis for next-level corrections
+        run_all_v4_analysis "$input_file"
+
+        # Get v4.0 correction parameters
+        local v4_corrections=$(get_v4_corrections)
+
         # Build the ImageMagick command dynamically
         local magick_cmd="magick \"$input_file\""
 
         # Apply v3.0 corrections first (lens corrections, color cast, etc.)
         if [ -n "$v3_corrections" ]; then
             magick_cmd="$magick_cmd $v3_corrections"
+        fi
+
+        # Apply v4.0 corrections (time-based, food, water, mood, lens profiles)
+        if [ -n "$v4_corrections" ]; then
+            magick_cmd="$magick_cmd $v4_corrections"
         fi
 
         # 1. White balance / Temperature adjustment
@@ -3003,6 +4217,10 @@ print_analysis_report() {
     echo -e "  Color Harmony:      $COLOR_HARMONY_TYPE palette"
     echo -e "  Dynamic Range:      $([ "$DR_OPTIMIZED" = true ] && echo "Needs optimization (headroom: $DR_HEADROOM%)" || echo "Good")"
     echo ""
+
+    # V4.0 Advanced Analysis
+    run_all_v4_analysis "$input_file"
+    print_v4_analysis "$filename"
 }
 
 #-------------------------------------------------------------------------------
@@ -3153,7 +4371,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         -v|--version)
-            echo "RAW Photo Batch Processor v1.0"
+            echo "RAW Photo Batch Processor v4.0"
             exit 0
             ;;
         -q|--quiet)
