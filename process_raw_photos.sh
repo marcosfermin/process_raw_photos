@@ -226,8 +226,8 @@ declare -a PROCESSING_TIMES=()  # Array to store per-image processing times
 
 # Color cast detection and correction
 ENABLE_COLOR_CAST_CORRECTION=true   # Auto-detect and fix color casts
-COLOR_CAST_THRESHOLD=8              # Minimum deviation to trigger correction (0-100)
-COLOR_CAST_STRENGTH=80              # Correction strength (0-100)
+COLOR_CAST_THRESHOLD=5              # Minimum deviation to trigger correction (0-100)
+COLOR_CAST_STRENGTH=100             # Correction strength (0-100)
 
 # Golden hour / Blue hour detection
 ENABLE_GOLDEN_HOUR_DETECTION=true   # Detect and enhance golden/blue hour photos
@@ -1248,40 +1248,65 @@ detect_color_cast() {
     # Calculate neutral gray reference
     local avg=$(echo "scale=2; ($red + $green + $blue) / 3" | bc -l)
 
-    # Calculate deviations
+    # Calculate deviations from neutral
     local red_dev=$(echo "scale=2; $red - $avg" | bc -l)
     local green_dev=$(echo "scale=2; $green - $avg" | bc -l)
     local blue_dev=$(echo "scale=2; $blue - $avg" | bc -l)
 
+    # Get absolute deviations
+    local abs_red=$(echo "$red_dev" | tr -d '-')
+    local abs_green=$(echo "$green_dev" | tr -d '-')
+    local abs_blue=$(echo "$blue_dev" | tr -d '-')
+
     # Determine cast type and magnitude
-    local max_dev=$(echo "$red_dev $green_dev $blue_dev" | tr ' ' '\n' | awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1)}' | sort -rn | head -1)
+    local max_dev=$(echo -e "$abs_red\n$abs_green\n$abs_blue" | sort -rn | head -1)
 
     if (( $(echo "$max_dev > $COLOR_CAST_THRESHOLD" | bc -l 2>/dev/null || echo 0) )); then
         HAS_COLOR_CAST=true
 
-        # Determine dominant cast
-        if (( $(echo "$red_dev > $green_dev && $red_dev > $blue_dev" | bc -l 2>/dev/null || echo 0) )); then
-            if (( $(echo "$red_dev > 0" | bc -l) )); then
-                COLOR_CAST_TYPE="warm"
-                local correction=$(echo "scale=0; 100 - ($red_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
-                COLOR_CAST_CORRECTION="-channel R -evaluate multiply 0.$correction +channel"
-            fi
-        elif (( $(echo "$blue_dev > $red_dev && $blue_dev > $green_dev" | bc -l 2>/dev/null || echo 0) )); then
-            if (( $(echo "$blue_dev > 0" | bc -l) )); then
-                COLOR_CAST_TYPE="cool"
-                local correction=$(echo "scale=0; 100 - ($blue_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
-                COLOR_CAST_CORRECTION="-channel B -evaluate multiply 0.$correction +channel"
-            fi
-        elif (( $(echo "$green_dev > $red_dev && $green_dev > $blue_dev" | bc -l 2>/dev/null || echo 0) )); then
-            if (( $(echo "$green_dev > 0" | bc -l) )); then
-                COLOR_CAST_TYPE="green"
-                local correction=$(echo "scale=0; 100 - ($green_dev * $COLOR_CAST_STRENGTH / 100)" | bc -l)
-                COLOR_CAST_CORRECTION="-channel G -evaluate multiply 0.$correction +channel"
-            else
-                COLOR_CAST_TYPE="magenta"
-                local boost=$(echo "scale=2; 1 + (${green_dev#-} * $COLOR_CAST_STRENGTH / 10000)" | bc -l)
-                COLOR_CAST_CORRECTION="-channel G -evaluate multiply $boost +channel"
-            fi
+        # Check for cyan cast (green AND blue both high, red low)
+        local cyan_indicator=$(echo "$green_dev > 0 && $blue_dev > 0 && $red_dev < 0" | bc -l 2>/dev/null)
+
+        # Check for green cast (green high)
+        local green_high=$(echo "$green_dev > $blue_dev && $green_dev > $red_dev && $green_dev > 0" | bc -l 2>/dev/null)
+
+        if [ "$cyan_indicator" = "1" ]; then
+            # Cyan cast - reduce both green and blue, boost red (common with DJ lighting)
+            COLOR_CAST_TYPE="cyan"
+            local g_mult=$(echo "scale=3; 1 - ($abs_green / 255 * $COLOR_CAST_STRENGTH / 80)" | bc -l)
+            local b_mult=$(echo "scale=3; 1 - ($abs_blue / 255 * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+            local r_boost=$(echo "scale=3; 1 + ($abs_red / 255 * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+            # Allow more aggressive correction for strong casts
+            [ "$(echo "$g_mult < 0.55" | bc -l)" = "1" ] && g_mult="0.55"
+            [ "$(echo "$b_mult < 0.65" | bc -l)" = "1" ] && b_mult="0.65"
+            [ "$(echo "$r_boost > 1.4" | bc -l)" = "1" ] && r_boost="1.4"
+            COLOR_CAST_CORRECTION="-channel G -evaluate multiply $g_mult -channel B -evaluate multiply $b_mult -channel R -evaluate multiply $r_boost +channel"
+        elif [ "$green_high" = "1" ]; then
+            # Green cast - reduce green aggressively, boost red and blue (DJ/party lighting)
+            COLOR_CAST_TYPE="green"
+            local g_mult=$(echo "scale=3; 1 - ($abs_green / 255 * $COLOR_CAST_STRENGTH / 70)" | bc -l)
+            local rb_boost=$(echo "scale=3; 1 + ($abs_green / 255 * $COLOR_CAST_STRENGTH / 200)" | bc -l)
+            [ "$(echo "$g_mult < 0.55" | bc -l)" = "1" ] && g_mult="0.55"
+            [ "$(echo "$rb_boost > 1.25" | bc -l)" = "1" ] && rb_boost="1.25"
+            COLOR_CAST_CORRECTION="-channel G -evaluate multiply $g_mult -channel R -evaluate multiply $rb_boost -channel B -evaluate multiply $rb_boost +channel"
+        elif (( $(echo "$red_dev > 0 && $abs_red > $abs_green && $abs_red > $abs_blue" | bc -l 2>/dev/null || echo 0) )); then
+            # Warm/red cast
+            COLOR_CAST_TYPE="warm"
+            local r_mult=$(echo "scale=3; 1 - ($abs_red / 255 * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+            [ "$(echo "$r_mult < 0.8" | bc -l)" = "1" ] && r_mult="0.8"
+            COLOR_CAST_CORRECTION="-channel R -evaluate multiply $r_mult +channel"
+        elif (( $(echo "$blue_dev > 0 && $abs_blue > $abs_red && $abs_blue > $abs_green" | bc -l 2>/dev/null || echo 0) )); then
+            # Cool/blue cast
+            COLOR_CAST_TYPE="cool"
+            local b_mult=$(echo "scale=3; 1 - ($abs_blue / 255 * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+            [ "$(echo "$b_mult < 0.8" | bc -l)" = "1" ] && b_mult="0.8"
+            COLOR_CAST_CORRECTION="-channel B -evaluate multiply $b_mult +channel"
+        elif (( $(echo "$green_dev < 0 && $abs_green > $abs_red && $abs_green > $abs_blue" | bc -l 2>/dev/null || echo 0) )); then
+            # Magenta cast (green deficiency)
+            COLOR_CAST_TYPE="magenta"
+            local g_boost=$(echo "scale=3; 1 + ($abs_green / 255 * $COLOR_CAST_STRENGTH / 100)" | bc -l)
+            [ "$(echo "$g_boost > 1.3" | bc -l)" = "1" ] && g_boost="1.3"
+            COLOR_CAST_CORRECTION="-channel G -evaluate multiply $g_boost +channel"
         fi
     fi
 }
@@ -3666,22 +3691,50 @@ process_single_image() {
             fi
         fi
 
-        # 2. Tint adjustment (green/magenta)
-        if [ "$TINT" -ne 0 ]; then
-            if [ "$TINT" -gt 0 ]; then
-                # Magenta: reduce green
-                local green_mult=$(echo "scale=3; (100 - $TINT / 5) / 100" | bc)
-                magick_cmd="$magick_cmd -channel G -evaluate multiply $green_mult +channel"
-            else
-                # Green: boost green
-                local tint_abs=${TINT#-}
-                local green_mult=$(echo "scale=3; (100 + $tint_abs / 5) / 100" | bc)
-                magick_cmd="$magick_cmd -channel G -evaluate multiply $green_mult +channel"
+        # 2. Base auto-corrections first
+        magick_cmd="$magick_cmd -auto-level -auto-gamma"
+
+        # 3. Tint adjustment (green/magenta) - applied AFTER auto-level to not be undone
+        local work_tint=$TINT
+
+        # Auto-apply magenta tint for indoor/night/party scenes to counter DJ green lighting
+        if [ "$work_tint" -eq 0 ]; then
+            # Check scene type OR time-of-day (night photos often have DJ lighting at parties)
+            local is_party_scene=false
+            if [ "$DETECTED_SCENE" = "indoor" ] || [ "$DETECTED_SCENE" = "night" ]; then
+                is_party_scene=true
+            elif [ "$DETECTED_TIME_PERIOD" = "night" ] || [ "$DETECTED_TIME_PERIOD" = "blue" ]; then
+                is_party_scene=true
+            fi
+
+            if [ "$is_party_scene" = true ]; then
+                # Party/night scenes often have green DJ lighting - apply strong correction
+                # Even if not detected as green cast (warm lights can mask green on average)
+                if [ "$COLOR_CAST_TYPE" = "cyan" ] || [ "$COLOR_CAST_TYPE" = "green" ]; then
+                    work_tint=60  # Very strong magenta push for detected green/cyan cast
+                else
+                    work_tint=45  # Strong magenta push for all night/party scenes
+                fi
             fi
         fi
 
-        # 3. Base auto-corrections
-        magick_cmd="$magick_cmd -auto-level -auto-gamma"
+        if [ "$work_tint" -ne 0 ]; then
+            if [ "$work_tint" -gt 0 ]; then
+                # Magenta: reduce green channel aggressively for party/DJ lighting
+                local green_mult=$(echo "scale=3; (100 - $work_tint * 0.7) / 100" | bc)
+                # Clamp green_mult to prevent over-correction
+                [ "$(echo "$green_mult < 0.55" | bc -l)" = "1" ] && green_mult="0.55"
+                # Also boost red/magenta for warmer skin tones
+                local red_boost=$(echo "scale=3; 1 + ($work_tint / 300)" | bc)
+                [ "$(echo "$red_boost > 1.2" | bc -l)" = "1" ] && red_boost="1.2"
+                magick_cmd="$magick_cmd -channel G -evaluate multiply $green_mult -channel R -evaluate multiply $red_boost +channel"
+            else
+                # Green: boost green
+                local tint_abs=${work_tint#-}
+                local green_mult=$(echo "scale=3; (100 + $tint_abs / 3) / 100" | bc)
+                magick_cmd="$magick_cmd -channel G -evaluate multiply $green_mult +channel"
+            fi
+        fi
 
         # 4. Highlight recovery
         if [ "$work_highlights" -ne 0 ]; then
@@ -3754,16 +3807,16 @@ process_single_image() {
                 magick_cmd="$magick_cmd -enhance -despeckle"
             elif [ "$work_noise_reduction" -lt 45 ]; then
                 # Moderate: median filter for noise + edge-preserving smooth
-                magick_cmd="$magick_cmd -median 1 -enhance"
+                magick_cmd="$magick_cmd -statistic Median 3x3 -enhance"
             elif [ "$work_noise_reduction" -lt 65 ]; then
                 # Strong: larger median + selective blur
-                magick_cmd="$magick_cmd -median 2 -selective-blur 0x4+10%"
+                magick_cmd="$magick_cmd -statistic Median 5x5 -selective-blur 0x4+10%"
             elif [ "$work_noise_reduction" -lt 85 ]; then
                 # Very strong: aggressive median + selective blur
-                magick_cmd="$magick_cmd -median 2 -selective-blur 0x5+10% -enhance"
+                magick_cmd="$magick_cmd -statistic Median 5x5 -selective-blur 0x5+10% -enhance"
             else
                 # Maximum: heavy noise reduction for very high ISO
-                magick_cmd="$magick_cmd -median 3 -selective-blur 0x6+15% -enhance"
+                magick_cmd="$magick_cmd -statistic Median 7x7 -selective-blur 0x6+15% -enhance"
             fi
         fi
 
